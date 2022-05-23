@@ -3,6 +3,9 @@
 
 #include <QtFbSupport/private/qfbscreen_p.h>
 #include <sys/ioctl.h>
+#include <fcntl.h>
+#include <linux/fb.h>
+#include <unistd.h>
 
 #include <cstring>
 
