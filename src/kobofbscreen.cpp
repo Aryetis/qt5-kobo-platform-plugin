@@ -294,19 +294,19 @@ void KoboFbScreen::doManualRefresh(const QRect &region)
 
     fbink_cfg.is_flashing = isFullRefresh;
 
-    while(true) {
-        if(fbink_refresh(mFbFd, region.top(), region.left(), region.width(), region.height(), &fbink_cfg) != 0) {
-            qDebug() << "QPA: Detected framebuffer freeze, attempting to fix ...";
-            int fd = open("/dev/fb0", O_RDONLY | O_CLOEXEC | O_NONBLOCK);
-            unsigned long arg = VESA_NO_BLANKING;
-            ioctl(fd, FBIOBLANK, arg);
-            close(fd);
+    int rv = fbink_refresh(mFbFd, region.top(), region.left(), region.width(), region.height(), &fbink_cfg);
+    if (rv != EXIT_SUCCESS && errno == EPERM) {
+        qDebug() << "QPA: Detected framebuffer freeze, attempting to fix ...";
+        unsigned long arg = VESA_NO_BLANKING;
+        if (ioctl(mFbFd, FBIOBLANK, arg) == EXIT_SUCCESS) {
+            rv = fbink_refresh(mFbFd, region.top(), region.left(), region.width(), region.height(), &fbink_cfg);
         }
-        else {
-            if (waitForRefresh && koboDevice->hasReliableMxcWaitFor) {
-                fbink_wait_for_complete(mFbFd, LAST_MARKER);
-            }
-            break;
+    }
+    if (rv == EXIT_SUCCESS && waitForRefresh) {
+        if (koboDevice->hasReliableMxcWaitFor) {
+            fbink_wait_for_complete(mFbFd, LAST_MARKER);
+        } else {
+            usleep(1000);
         }
     }
 }
