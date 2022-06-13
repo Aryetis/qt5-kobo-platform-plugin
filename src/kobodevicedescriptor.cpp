@@ -280,7 +280,13 @@ static QSizeF determinePhysicalSize(const fb_var_screeninfo &vinfo, const QSize 
 
 KoboDeviceDescriptor determineDevice()
 {
-    auto deviceName = exec("/bin/kobo_config.sh 2>/dev/null");
+    QString deviceName;
+    if(QFile::exists("/bin/kobo_config.sh")) {
+        deviceName = exec("/bin/kobo_config.sh 2>/dev/null");
+    }
+    else {
+        deviceName = std::getenv("DEVICE_CODENAME");
+    }
     auto modelNumberStr = exec("cut -f 6 -d ',' /mnt/onboard/.kobo/version | sed -e 's/^[0-]*//'");
     int modelNumber = modelNumberStr.toInt();
 
