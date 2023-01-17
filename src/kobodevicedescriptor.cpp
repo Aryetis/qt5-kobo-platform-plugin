@@ -12,7 +12,7 @@ KoboDeviceDescriptor KoboTrilogyAB = {
     .mark = 3,
     .dpi = 200,
     .hasKeys = true,
-    .touchscreenSettings{.swapXY = false, .hasMultitouch = false},
+    .touchscreenSettings = {.swapXY = false, .hasMultitouch = false},
     .frontlightSettings = {.hasFrontLight = false},
 };
 
@@ -22,7 +22,7 @@ KoboDeviceDescriptor KoboTrilogyC = {
     .mark = 4,
     .dpi = 200,
     .hasKeys = true,
-    .touchscreenSettings{.swapXY = false, .hasMultitouch = false},
+    .touchscreenSettings= {.swapXY = false, .hasMultitouch = false},
     .frontlightSettings = {.hasFrontLight = false},
 };
 
@@ -31,7 +31,7 @@ KoboDeviceDescriptor KoboPixie = {
     .device = KoboMini,
     .mark = 4,
     .dpi = 200,
-    .touchscreenSettings{.hasMultitouch = false},
+    .touchscreenSettings= {.hasMultitouch = false},
     .frontlightSettings = {.hasFrontLight = false},
 };
 
@@ -40,7 +40,7 @@ KoboDeviceDescriptor KoboKraken = {
     .device = KoboGlo,
     .mark = 4,
     .dpi = 212,
-    .touchscreenSettings{.hasMultitouch = false},
+    .touchscreenSettings= {.hasMultitouch = false},
 };
 
 // Kobo Glo HD:
@@ -73,7 +73,7 @@ KoboDeviceDescriptor KoboDragon = {
     .device = KoboAuraHD,
     .mark = 4,
     .dpi = 265,
-    .touchscreenSettings{.hasMultitouch = false},
+    .touchscreenSettings= {.hasMultitouch = false},
 };
 
 // Kobo Aura H2O:

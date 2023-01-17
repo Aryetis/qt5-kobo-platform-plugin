@@ -48,25 +48,19 @@ FBInkBuildEvent.commands = CROSS_TC=$$CROSS_TC MINIMAL=1 DRAW=1 KOBO=true make -
 
 SOURCES = src/main.cpp \
           src/dither.cpp \
-          src/kobobuttonintegration.cpp \
           src/kobodevicedescriptor.cpp \
           src/kobofbscreen.cpp \
-          src/koboplatformadditions.cpp \
           src/koboplatformintegration.cpp \
-          src/kobowifimanager.cpp \
           src/qevdevtouchmanager.cpp \
           src/qevdevtouchhandler.cpp
 
 HEADERS = \
           src/dither.h \
           src/einkenums.h \
-          src/kobobuttonintegration.h \
           src/kobodevicedescriptor.h \
           src/kobofbscreen.h \
-          src/koboplatformadditions.h \
           src/koboplatformfunctions.h \
           src/koboplatformintegration.h \
-          src/kobowifimanager.h \
           src/qevdevtouchfilter_p.h \
           src/qevdevtouchhandler_p.h \
           src/qevdevtouchmanager_p.h
