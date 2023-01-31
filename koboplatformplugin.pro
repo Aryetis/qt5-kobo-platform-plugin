@@ -75,5 +75,5 @@ DISTFILES += \
     koboplatformplugin.json
 
 RESOURCES += \
-    Resources.qrc
+    resources.qrc
 

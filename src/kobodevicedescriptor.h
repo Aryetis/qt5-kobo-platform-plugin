@@ -6,7 +6,7 @@
 
 enum KoboDevice
 {
-    KoboUnknown,
+    Unknown,
     KoboTouchAB,
     KoboTouchC,
     KoboMini,
@@ -36,23 +36,6 @@ struct TouchscreenSettings
     bool hasMultitouch = true;
 };
 
-struct FrontlightSettings
-{
-    bool hasFrontLight = true;
-    int frontlightMin = 0;
-    int frontlightMax = 100;
-    bool hasNaturalLight = false;
-    bool hasNaturalLightMixer = false;
-    bool naturalLightInverted = false;
-    int naturalLightMin = 0;
-    int naturalLightMax = 100;
-
-    QString frontlightDevWhite = "/sys/class/backlight/mxc_msp430.0/brightness";
-    QString frontlightDevMixer = "/sys/class/backlight/lm3630a_led/color";
-    QString frontlightDevRed = "/sys/class/backlight/lm3630a_led1a";
-    QString frontlightDevGreen = "/sys/class/backlight/lm3630a_ledb";
-};
-
 struct KoboDeviceDescriptor
 {
     KoboDevice device;
@@ -65,9 +48,6 @@ struct KoboDeviceDescriptor
     qreal physicalWidth;
     qreal physicalHeight;
 
-    bool hasKeys = false;
-    bool canToggleChargingLED = false;
-
     // New devices *may* be REAGL-aware, but generally don't expect explicit REAGL requests, default to not.
     bool isREAGL = false;
 
@@ -75,15 +55,12 @@ struct KoboDeviceDescriptor
     bool hasGSensor = false;
 
     TouchscreenSettings touchscreenSettings;
-    FrontlightSettings frontlightSettings;
 
     // MXCFB_WAIT_FOR_UPDATE_COMPLETE ioctls are generally reliable
     bool hasReliableMxcWaitFor = true;
     // Sunxi devices require a completely different fb backend...
     bool isSunxi = false;
 
-    // Standard sysfs path to the battery directory
-    QString batterySysfs = "/sys/class/power_supply/mc13892_bat";
     // Stable path to the NTX input device
     QString ntxDev = "/dev/input/event0";
     // Stable path to the Touch input device

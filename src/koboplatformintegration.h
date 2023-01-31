@@ -3,6 +3,7 @@
 
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformcursor.h>
 
 #include <QtCore/QRegularExpression>
 
@@ -11,6 +12,7 @@
 
 class QAbstractEventDispatcher;
 class QFbVtHandler;
+class QPlatformCursor;
 
 class KoboPlatformIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 {
