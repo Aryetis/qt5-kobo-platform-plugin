@@ -34,7 +34,7 @@ public:
 
     void enableDithering(bool softwareDithering, bool hardwareDithering);
 
-    void doManualRefresh(const QRect &region, bool forcemode = false, WFM_MODE_INDEX_T waveformMode = WFM_AUTO);
+    void doManualRefresh(const QRect &region, bool forceMode = false, WFM_MODE_INDEX_T waveformMode = WFM_AUTO);
 
     bool setScreenRotation(ScreenRotation r, int bpp = 8);
 
@@ -86,7 +86,7 @@ private:
 
     bool renderCursor = false;
     bool mouse = false;
-    bool motiondebug = false;
+    bool motionDebug = false;
     QTimer* mouseTimer;
     QPoint previousPosition;
     bool changedTime = false;

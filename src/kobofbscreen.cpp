@@ -152,7 +152,7 @@ bool KoboFbScreen::initialize()
         else if (arg.startsWith("mouse"))
             mouse = true;
         else if (arg.startsWith("motiondebug"))
-            motiondebug = true;
+            motionDebug = true;
             qDebug() << "Motion debug enabled. Debug information for screen and mouse will be printed";
     }
 
@@ -301,7 +301,7 @@ void KoboFbScreen::ditherRegion(const QRect &region)
     //                         mScreenImage.width(), updateHeight);
 }
 
-void KoboFbScreen::doManualRefresh(const QRect &region, bool forcemode, WFM_MODE_INDEX_T waveformMode)
+void KoboFbScreen::doManualRefresh(const QRect &region, bool forceMode, WFM_MODE_INDEX_T waveformMode)
 {
     bool isFullRefresh = region.width() >= mGeometry.width() - FULLSCREENTOLERANCE &&
                          region.height() >= mGeometry.height() - FULLSCREENTOLERANCE;
@@ -317,7 +317,7 @@ void KoboFbScreen::doManualRefresh(const QRect &region, bool forcemode, WFM_MODE
         fbink_cfg.wfm_mode = this->waveFormPartial;
 
     // Needed for mouse
-    if(forcemode) {
+    if(forceMode) {
         fbink_cfg.wfm_mode = waveformMode;
     }
 
@@ -366,13 +366,13 @@ QRegion KoboFbScreen::doRedraw()
     for (const QRect &rect : touched) {
         if(mouse) {
             if(rect.x() == mCursor->pos().x() and rect.y() == mCursor->pos().y()) {
-                if (motiondebug) qDebug() << "Detected overwriting cursor position";
+                if (motionDebug) qDebug() << "Detected overwriting cursor position";
             }
             // This function can be called only once, then it sets to 0,0
             dirtyRect = mCursor->dirtyRect();
-            if(motiondebug) qDebug() << "Dirty cursor position:" << dirtyRect;
+            if(motionDebug) qDebug() << "Dirty cursor position:" << dirtyRect;
             if(rect == dirtyRect and renderCursor == false) {
-                if(motiondebug) qDebug() << "Requested overwrite cursor even though it's not allowed. Saving this fragment for later.";
+                if(motionDebug) qDebug() << "Requested overwrite cursor even though it's not allowed. Saving this fragment for later.";
                 savedCursorRects.push_back(dirtyRect);
             }
             else {
@@ -387,7 +387,7 @@ QRegion KoboFbScreen::doRedraw()
 
     doManualRefresh(r);
 
-    if (motiondebug) qDebug() << "Painted region" << touched << "in" << t.elapsed() << "ms";
+    if (motionDebug) qDebug() << "Painted region" << touched << "in" << t.elapsed() << "ms";
 
     return touched;
 }
@@ -396,7 +396,7 @@ void KoboFbScreen::mouseMoveChecker() {
     // Increase speed of cursor rendering if its moving
     if(previousPosition != mCursor->pos()) {
         if(changedTime == false) {
-            if (motiondebug) qDebug() << "Cleaning at not moving cursor:" << stopRect;
+            if (motionDebug) qDebug() << "Cleaning at not moving cursor:" << stopRect;
             mBlitter->setCompositionMode(QPainter::CompositionMode_Source);
             mBlitter->drawImage(previousPosition, cleanStopFragment);
             // We need full actually, and the default is small
@@ -411,8 +411,8 @@ void KoboFbScreen::mouseMoveChecker() {
             //doManualRefresh(QRect{stopRect.x(), stopRect.y(), 100, 100});
         }
 
-        if (motiondebug) qDebug() << "Mouse moved:" << mCursor->pos();
-        if (motiondebug) qDebug() << "Cursor needs refreshing:" << mCursor->isDirty();
+        if (motionDebug) qDebug() << "Mouse moved:" << mCursor->pos();
+        if (motionDebug) qDebug() << "Cursor needs refreshing:" << mCursor->isDirty();
 
         // Save the clean position of the cursor
         // To avoid ghosting
@@ -439,7 +439,7 @@ void KoboFbScreen::mouseMoveChecker() {
         stopRect.setWidth(x);
         stopRect.setHeight(y);
         if(x == fallbackSize and y == fallbackSize) {
-             if (motiondebug) qDebug() << "Failed to get cursor size";
+             if (motionDebug) qDebug() << "Failed to get cursor size";
         }
         if(useSoftwareDithering) {
             cleanStopFragment = mScreenImageDither.copy(stopRect);
@@ -461,18 +461,18 @@ void KoboFbScreen::mouseMoveChecker() {
         mBlitter->setCompositionMode(QPainter::CompositionMode_Source);
         // Clean previous ones
         for(int i = 0; i < savedCursorRects.length(); i++) {
-            if (motiondebug) qDebug() << "Clearing previous cursor:" << savedCursorRects[i];
+            if (motionDebug) qDebug() << "Clearing previous cursor:" << savedCursorRects[i];
                 mBlitter->drawImage(savedCursorRects[i], useSoftwareDithering ? mScreenImageDither : mScreenImage, savedCursorRects[i]);
                 doManualRefresh(savedCursorRects[i]);
         }
-        if (motiondebug) qDebug() << "Cleared previous cursor count:" << savedCursorRects.length();
+        if (motionDebug) qDebug() << "Cleared previous cursor count:" << savedCursorRects.length();
         // Save the latest width and height of the cursor to clean it in slow start
         savedCursorRects.clear();
         renderCursor = false;
 
         countCycles = 0;
         if(changedTime == false) {
-            if (motiondebug) qDebug() << "Rendering mouse and starting fast refresh mode";
+            if (motionDebug) qDebug() << "Rendering mouse and starting fast refresh mode";
             changedTime = true;
             mouseTimer->stop();
             mouseTimer->start(fastRefresh);
@@ -482,7 +482,7 @@ void KoboFbScreen::mouseMoveChecker() {
     else {
        if(changedTime == true) {
            if(countCycles == cyclesUntilSlow) {
-               if (motiondebug) qDebug() << "Mouse stopped moving, returning to slow refreshes";
+               if (motionDebug) qDebug() << "Mouse stopped moving, returning to slow refreshes";
 
                // Make sure the cursor is visible
                if (koboDevice->hasReliableMxcWaitFor) {
