@@ -375,7 +375,7 @@ QRegion KoboFbScreen::doRedraw()
             dirtyRect = mCursor->dirtyRect();
             if(motionDebug) qDebug() << "Dirty cursor position:" << dirtyRect;
             if(rect == dirtyRect and renderCursor == false) {
-                if(motionDebug) qDebug() << "Requested overwrite cursor even though it's not allowed. Saving this fragment for later.";
+                if(motionDebug) qDebug() << "Requested cursor overwrite even though it's not allowed. Saving this fragment for later.";
                 savedCursorRects.push_back(dirtyRect);
             }
             else {
@@ -396,7 +396,7 @@ QRegion KoboFbScreen::doRedraw()
 }
 
 void KoboFbScreen::mouseMoveChecker() {
-    // Increase speed of cursor rendering if its moving
+    // Increase speed of cursor rendering if it's moving
     if(previousPosition != mCursor->pos()) {
         if(changedTime == false) {
             if (motionDebug) qDebug() << "Cleaning at not moving cursor:" << stopRect;
@@ -408,10 +408,11 @@ void KoboFbScreen::mouseMoveChecker() {
                 fbink_wait_for_complete(mFbFd, LAST_MARKER);
             }
             doManualRefresh(stopRect, true, this->waveFormPartial);
-            // Debug
-            //QImage tmp{"/cursor.png"};
-            //mBlitter->drawImage(QRect{stopRect.x(), stopRect.y(), 100, 100}, tmp, QRect{0, 100, 100, 100});
-            //doManualRefresh(QRect{stopRect.x(), stopRect.y(), 100, 100});
+            /* Debug
+            QImage tmp{"/cursor.png"};
+            mBlitter->drawImage(QRect{stopRect.x(), stopRect.y(), 100, 100}, tmp, QRect{0, 100, 100, 100});
+            doManualRefresh(QRect{stopRect.x(), stopRect.y(), 100, 100});
+	    */
         }
 
         if (motionDebug) qDebug() << "Mouse moved:" << mCursor->pos();
@@ -450,8 +451,9 @@ void KoboFbScreen::mouseMoveChecker() {
         else {
             cleanStopFragment = mScreenImage.copy(stopRect);
         }
-        // Debug
-        //cleanStopFragment.save("/tmp/cleanStopFragment.png", nullptr, -1);
+        /* Debug
+        cleanStopFragment.save("/tmp/cleanStopFragment.png", nullptr, -1);
+	*/
 
         // Actually request rendering it
         renderCursor = true;

@@ -202,15 +202,15 @@ void KoboPlatformIntegration::createInputHandlers()
 
         #if QT_CONFIG(libinput)
             libinput_bool = true;
-            if(debug) qDebug() << "Using libinput, hot-plugging devices enabled";
+            if(debug) qDebug() << "Using libinput, device hot-plugging enabled";
             new QLibInputHandler(QLatin1String("libinput"), QString());
         #endif
-            if(debug and !libinputBool) qDebug() << "libinput not found, hot-plugging disabled";
+            if(debug and !libinputBool) qDebug() << "libinput not found, device hot-plugging disabled";
 
         #if QT_CONFIG(tslib)
             if(!libinput_bool) {
                 tslib_bool = true;
-                if(debug) qDebug() << "libinput unavailable, so using experimental tslib";
+                if(debug) qDebug() << "libinput unavailable: using experimental tslib";
                 new QTsLibMouseHandler(QLatin1String("TsLib"), QString());
                 if(debug) qDebug() << "tslib support detected";
             }
@@ -220,7 +220,7 @@ void KoboPlatformIntegration::createInputHandlers()
         #if QT_CONFIG(evdev)
             if(!libinputBool and !tslibBool) {
                 evdevBool = true;
-                if(debug) qDebug() << "Additional input libraries aren't available, hot-plugging unavailable, using evdev";
+                if(debug) qDebug() << "Additional input libraries aren't available: hot-plugging unavailable; using evdev";
                 if(keyboard) {
                     new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
                     if(debug) qDebug() << "Created instance of QEvdevKeyboardManager";
@@ -229,7 +229,7 @@ void KoboPlatformIntegration::createInputHandlers()
                     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
                     if(debug) qDebug() << "Created instance of QEvdevMouseManager";
 
-                    // this is actually needed to make the cursor appear... Very important
+                    // This is actually needed to make the cursor appear... Very important
                     QMouseEvent *event = new QMouseEvent(QEvent::MouseMove, QPoint(koboDevice.width / 2, koboDevice.height / 2), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
                     m_primaryScreen->mCursor->pointerEvent(*event);
                 }
