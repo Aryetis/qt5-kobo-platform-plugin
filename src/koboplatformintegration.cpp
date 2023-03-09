@@ -16,8 +16,9 @@
 #if QT_CONFIG(evdev)
 #include <QtInputSupport/private/qevdevmousemanager_p.h>
 #include <QtInputSupport/private/qevdevkeyboardmanager_p.h>
-#include <QtInputSupport/private/qevdevtouchmanager_p.h> // Needed always
 #endif
+
+#include <QtInputSupport/private/qevdevtouchmanager_p.h> // Needed always
 
 #if QT_CONFIG(tslib)
 #include <QtInputSupport/private/qtslib_p.h>
@@ -186,7 +187,7 @@ void KoboPlatformIntegration::createInputHandlers()
     evdevTouchArgs += QString(":screenwidth=%1").arg(koboDevice.width);
     evdevTouchArgs += QString(":screenheight=%1").arg(koboDevice.height);
 
-    evdevTouchArgs += QString(":screenrotation=%1").arg(screenrot * 90);
+    evdevTouchArgs += QString(":screenrotation=%1").arg(screenrot * 90); // Whaaat
 
     new QEvdevTouchManager("EvdevTouch", evdevTouchArgs, this);
 
@@ -225,7 +226,7 @@ void KoboPlatformIntegration::createInputHandlers()
                     if(debug) qDebug() << "Created instance of QEvdevKeyboardManager";
                 }
                 if(mouse) {
-                    QEvdevMouseManager* mouse_manager = new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
+                    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
                     if(debug) qDebug() << "Created instance of QEvdevMouseManager";
 
                     // this is actually needed to make the cursor appear... Very important

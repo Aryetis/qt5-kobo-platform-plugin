@@ -55,7 +55,7 @@ private:
 
     QStringList mArgs;
     int mFbFd;
-    bool debug;
+    bool debug = false;
 
     QImage mFbScreenImage;
     int mBytesPerLine;

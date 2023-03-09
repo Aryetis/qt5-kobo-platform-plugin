@@ -38,9 +38,9 @@ struct TouchscreenSettings
 
 struct KoboDeviceDescriptor
 {
-    KoboDevice device;
-    QString modelName;
-    int modelNumber;
+    KoboDevice device = Unknown;
+    QString modelName = "";
+    int modelNumber = 0;
     int mark = 6;
     int dpi;
     int width;

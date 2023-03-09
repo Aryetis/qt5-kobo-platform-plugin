@@ -295,7 +295,7 @@ KoboDeviceDescriptor determineDevice()
     {
         device = KoboEuropa;
     }
-    else
+    else // Why is it the last in else only?...
     {
         device = KoboTrilogyC;
     }
