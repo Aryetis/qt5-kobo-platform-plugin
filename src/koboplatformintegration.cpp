@@ -16,8 +16,9 @@
 #if QT_CONFIG(evdev)
 #include <QtInputSupport/private/qevdevmousemanager_p.h>
 #include <QtInputSupport/private/qevdevkeyboardmanager_p.h>
-#include <QtInputSupport/private/qevdevtouchmanager_p.h> // Needed always
 #endif
+
+#include <QtInputSupport/private/qevdevtouchmanager_p.h> // Always needed
 
 #if QT_CONFIG(tslib)
 #include <QtInputSupport/private/qtslib_p.h>
@@ -125,7 +126,7 @@ void KoboPlatformIntegration::createInputHandlers()
     {
         if (arg.startsWith("debug"))
             debug = true;
-        // Those debug messages will not be seen if debug is the latest argument
+        // Those debug messages will not be seen if 'debug' is the latest argument
         if(arg.startsWith("keyboard")) {
             if(debug) qDebug() << "Keyboard support enabled";
             keyboard = true;
@@ -225,7 +226,7 @@ void KoboPlatformIntegration::createInputHandlers()
                     if(debug) qDebug() << "Created instance of QEvdevKeyboardManager";
                 }
                 if(mouse) {
-                    QEvdevMouseManager* mouse_manager = new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
+                    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
                     if(debug) qDebug() << "Created instance of QEvdevMouseManager";
 
                     // This is actually needed to make the cursor appear... Very important

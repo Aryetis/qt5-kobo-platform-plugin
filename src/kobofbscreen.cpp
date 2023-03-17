@@ -151,9 +151,10 @@ bool KoboFbScreen::initialize()
             debug = true;
         else if (arg.startsWith("mouse"))
             mouse = true;
-        else if (arg.startsWith("motiondebug"))
+        else if (arg.startsWith("motiondebug")) {
             motionDebug = true;
             qDebug() << "Motion debug enabled. Debug information for screen and mouse will be printed";
+        }
     }
 
     fbink_cfg.is_verbose = debug;
@@ -191,8 +192,9 @@ bool KoboFbScreen::initialize()
                 QString::number(koboDevice->dpi / (double)logicalDpiTarget, 'g', 8).toLatin1());
     }
 
+    // Even if cursor is disabled, because of cursor function override this still needs to be here to prevent a randomly-appearing segmentation fault.
+    mCursor = new QFbCursor(this);
     if(mouse) {
-        mCursor = new QFbCursor(this);
         previousPosition = mCursor->pos();
         mouseTimer = new QTimer(this);
         connect(mouseTimer, &QTimer::timeout, this, &KoboFbScreen::mouseMoveChecker);

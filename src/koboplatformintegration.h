@@ -56,7 +56,7 @@ private:
     QScopedPointer<QPlatformFontDatabase> m_fontDb;
     QScopedPointer<QPlatformServices> m_services;
 
-    bool debug;
+    bool debug = false; // Default
 };
 
 #endif  // QLINUXFBINTEGRATION_H
