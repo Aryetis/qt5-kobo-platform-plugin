@@ -18,7 +18,7 @@
 #include <QtInputSupport/private/qevdevkeyboardmanager_p.h>
 #endif
 
-#include <QtInputSupport/private/qevdevtouchmanager_p.h> // Needed always
+#include <QtInputSupport/private/qevdevtouchmanager_p.h> // Always needed
 
 #if QT_CONFIG(tslib)
 #include <QtInputSupport/private/qtslib_p.h>
@@ -126,7 +126,7 @@ void KoboPlatformIntegration::createInputHandlers()
     {
         if (arg.startsWith("debug"))
             debug = true;
-        // Those debug messages will not be seen if debug is the latest argument
+        // Those debug messages will not be seen if 'debug' is the latest argument
         if(arg.startsWith("keyboard")) {
             if(debug) qDebug() << "Keyboard support enabled";
             keyboard = true;
@@ -187,7 +187,7 @@ void KoboPlatformIntegration::createInputHandlers()
     evdevTouchArgs += QString(":screenwidth=%1").arg(koboDevice.width);
     evdevTouchArgs += QString(":screenheight=%1").arg(koboDevice.height);
 
-    evdevTouchArgs += QString(":screenrotation=%1").arg(screenrot * 90); // Whaaat
+    evdevTouchArgs += QString(":screenrotation=%1").arg(screenrot * 90);
 
     new QEvdevTouchManager("EvdevTouch", evdevTouchArgs, this);
 
