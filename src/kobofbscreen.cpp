@@ -192,8 +192,7 @@ bool KoboFbScreen::initialize()
                 QString::number(koboDevice->dpi / (double)logicalDpiTarget, 'g', 8).toLatin1());
     }
 
-
-    // Even if cursor is disabled, because of cursor function override this still needs to be here to prevent a random appearing segmentation fault.
+    // Even if cursor is disabled, because of cursor function override this still needs to be here to prevent a randomly-appearing segmentation fault.
     mCursor = new QFbCursor(this);
     if(mouse) {
         previousPosition = mCursor->pos();
