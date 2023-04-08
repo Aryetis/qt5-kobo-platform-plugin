@@ -1,4 +1,3 @@
-
 #include "koboplatformintegration.h"
 
 #include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
@@ -19,10 +18,6 @@
 #endif
 
 #include <QtInputSupport/private/qevdevtouchmanager_p.h> // Always needed
-
-#if QT_CONFIG(tslib)
-#include <QtInputSupport/private/qtslib_p.h>
-#endif
 
 KoboPlatformIntegration::KoboPlatformIntegration(const QStringList &paramList)
     : m_paramList(paramList),
@@ -195,32 +190,26 @@ void KoboPlatformIntegration::createInputHandlers()
         qDebug() << "device:" << koboDevice.modelName << koboDevice.modelNumber << '\n'
                  << "screen:" << koboDevice.width << koboDevice.height << "dpi:" << koboDevice.dpi;
 
+    // A bit of inspiration: https://github.com/librereader/qpa-einkfb
     if(keyboard == true or mouse == true) {
         bool libinputBool = false;
-        bool tslibBool = false;
-        bool evdevBool = false;
+        bool evdevBool = false; // Probably not needed
 
         #if QT_CONFIG(libinput)
-            libinput_bool = true;
-            if(debug) qDebug() << "Using libinput, device hot-plugging enabled";
-            new QLibInputHandler(QLatin1String("libinput"), QString());
-        #endif
-            if(debug and !libinputBool) qDebug() << "libinput not found, device hot-plugging disabled";
+            libinputBool = true;
+            if(debug) qDebug() << "Using libinput as input backend for peripherals";
 
-        #if QT_CONFIG(tslib)
-            if(!libinput_bool) {
-                tslib_bool = true;
-                if(debug) qDebug() << "libinput unavailable: using experimental tslib";
-                new QTsLibMouseHandler(QLatin1String("TsLib"), QString());
-                if(debug) qDebug() << "tslib support detected";
+            if(keyboard or mouse) {
+                new QLibInputHandler(QLatin1String("libinput"), QString());
+                if(debug) qDebug() << "Created instance of QLibInputHandler";
             }
         #endif
-            if(debug and !tslibBool) qDebug() << "tslib not found";
+            if(debug and !libinputBool) qDebug() << "Input backend 'libinput' not found";
 
         #if QT_CONFIG(evdev)
-            if(!libinputBool and !tslibBool) {
+            if(!libinputBool) {
                 evdevBool = true;
-                if(debug) qDebug() << "Additional input libraries aren't available: hot-plugging unavailable; using evdev";
+                if(debug) qDebug() << "Additional input libraries aren't available; using evdev";
                 if(keyboard) {
                     new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
                     if(debug) qDebug() << "Created instance of QEvdevKeyboardManager";
@@ -228,15 +217,17 @@ void KoboPlatformIntegration::createInputHandlers()
                 if(mouse) {
                     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
                     if(debug) qDebug() << "Created instance of QEvdevMouseManager";
-
-                    // This is actually needed to make the cursor appear... Very important
-                    QMouseEvent *event = new QMouseEvent(QEvent::MouseMove, QPoint(koboDevice.width / 2, koboDevice.height / 2), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
-                    m_primaryScreen->mCursor->pointerEvent(*event);
                 }
             }
         #endif
 
-        if((libinputBool or tslibBool or evdevBool) and debug) {
+        if(mouse and (evdevBool or libinputBool)) {
+            // This is actually needed to make the cursor appear... Very important
+            QMouseEvent *event = new QMouseEvent(QEvent::MouseMove, QPoint(koboDevice.width / 2, koboDevice.height / 2), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+            m_primaryScreen->mCursor->pointerEvent(*event);
+        }
+
+        if((libinputBool or evdevBool) and debug) {
             qDebug() << "WARNING: Additional command line arguments may be required for input. Please read the documentation.";
         }
     }
