@@ -193,7 +193,7 @@ void KoboPlatformIntegration::createInputHandlers()
     // A bit of inspiration: https://github.com/librereader/qpa-einkfb
     if(keyboard == true or mouse == true) {
         bool libinputBool = false;
-        bool evdevBool = false; // Propably not needed
+        bool evdevBool = false; // Probably not needed
 
         #if QT_CONFIG(libinput)
             libinputBool = true;
@@ -204,7 +204,7 @@ void KoboPlatformIntegration::createInputHandlers()
                 if(debug) qDebug() << "Created instance of QLibInputHandler";
             }
         #endif
-            if(debug and !libinputBool) qDebug() << "Input backend libinput not found";
+            if(debug and !libinputBool) qDebug() << "Input backend 'libinput' not found";
 
         #if QT_CONFIG(evdev)
             if(!libinputBool) {
