@@ -158,12 +158,39 @@ KoboDeviceDescriptor KoboLuna = {
 };
 
 // Kobo Elipsa
-// TODO...
 KoboDeviceDescriptor KoboEuropa = {
     .device = KoboElipsa,
     .mark = 8,
     .dpi = 227,
     .isSunxi = true,
+};
+
+// Kobo Sage
+KoboDeviceDescriptor KoboCadmus = {
+    .device = KoboSage,
+    .mark = 8,
+    .dpi = 300,
+    .hasGSensor = true,
+    .isSunxi = true,
+    .ntxDev = "/dev/input/by-path/platform-ntx_event0-event",
+    .touchDev = "/dev/input/by-path/platform-0-0010-event",
+};
+
+// Kobo Libra 2
+KoboDeviceDescriptor KoboIo = {
+    .device = KoboLibra2,
+    .mark = 7,
+    .dpi = 300,
+    .hasGSensor = true,
+    .touchscreenSettings{.invertX = false},
+};
+
+// Kobo Clara 2E
+KoboDeviceDescriptor KoboGoldfinch = {
+    .device = KoboClara2E,
+    .mark = 7,
+    .dpi = 300,
+    .hasGSensor = true,
 };
 
 static QString exec(const char *cmd)
@@ -294,6 +321,18 @@ KoboDeviceDescriptor determineDevice()
     else if (deviceName == "europa")
     {
         device = KoboEuropa;
+    }
+    else if (deviceName == "cadmus")
+    {
+        device = KoboCadmus;
+    }
+    else if (deviceName == "io")
+    {
+        device = KoboIo;
+    }
+    else if (deviceName == "goldfinch")
+    {
+        device = KoboGoldfinch;
     }
     else // Why is it the last in else only?...
     {

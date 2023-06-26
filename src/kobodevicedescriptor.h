@@ -25,7 +25,10 @@ enum KoboDevice
     KoboForma,
     KoboLibraH2O,
     KoboNia,
-    KoboElipsa
+    KoboElipsa,
+    KoboSage,
+    KoboLibra2,
+    KoboClara2E
 };
 
 struct TouchscreenSettings
