@@ -87,7 +87,12 @@ KoboFbScreen::KoboFbScreen(const QStringList &args, KoboDeviceDescriptor *koboDe
       useHardwareDithering(false),
       useSoftwareDithering(true)
 {
-    waitForRefresh = false;
+    if(koboDevice->modelName == "nova") {
+        waitForRefresh = true;
+    }
+    else {
+        waitForRefresh = false;
+    }
     useHardwareDithering = false;
     waveFormFullscreen = WFM_GC16;
     waveFormPartial = WFM_AUTO;
