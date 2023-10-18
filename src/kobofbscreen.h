@@ -48,6 +48,8 @@ public:
 
     void mouseMoveChecker();
 
+    void setFlashing(bool v);
+
 private:
     void ditherRegion(const QRect &region);
 
@@ -101,6 +103,8 @@ private:
     QFile standbyCursorFile{"standby_cursor.png"};
     QImage* standbyCursor;
     QRect stopRect = QRect{0, 0, 0, 0};
+
+    bool flashingEnabled = true;
 
 };
 

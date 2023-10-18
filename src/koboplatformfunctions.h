@@ -26,6 +26,21 @@ public:
             func(waveform);
     }
 
+    typedef void (*setFlashingType)(bool v);
+    static QByteArray setFlashingIdentifier()
+    {
+        return QByteArrayLiteral("setFlashing");
+    }
+
+    static void setFlashing(bool v)
+    {
+        auto func = reinterpret_cast<setFlashingType>(
+            QGuiApplication::platformFunction(setFlashingIdentifier()));
+        if (func) {
+            func(v);
+        }
+    }
+
     typedef void (*clearScreenType)(bool waitForCompleted);
     static QByteArray clearScreenIdentifier() { return QByteArrayLiteral("clearScreen"); }
 

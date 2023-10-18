@@ -247,6 +247,8 @@ QFunctionPointer KoboPlatformIntegration::platformFunction(const QByteArray &fun
 {
     if (function == KoboPlatformFunctions::setFullScreenRefreshModeIdentifier())
         return QFunctionPointer(setFullScreenRefreshModeStatic);
+    else if (function == KoboPlatformFunctions::setFlashingIdentifier())
+        return QFunctionPointer(setFlashingStatic);
     else if (function == KoboPlatformFunctions::clearScreenIdentifier())
         return QFunctionPointer(clearScreenStatic);
     else if (function == KoboPlatformFunctions::enableDitheringIdentifier())
@@ -263,6 +265,13 @@ void KoboPlatformIntegration::setFullScreenRefreshModeStatic(WaveForm waveform)
     KoboPlatformIntegration *self =
         static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
     self->m_primaryScreen->setFullScreenRefreshMode(waveform);
+}
+
+void KoboPlatformIntegration::setFlashingStatic(bool v)
+{
+    KoboPlatformIntegration *self =
+        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    self->m_primaryScreen->setFlashing(v);
 }
 
 void KoboPlatformIntegration::clearScreenStatic(bool waitForCompleted)

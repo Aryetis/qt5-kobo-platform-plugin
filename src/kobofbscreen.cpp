@@ -323,12 +323,22 @@ void KoboFbScreen::doManualRefresh(const QRect &region, bool forceMode, WFM_MODE
         fbink_cfg.wfm_mode = waveformMode;
     }
 
-    fbink_cfg.is_flashing = isFullRefresh;
+    if(flashingEnabled == true) {
+        fbink_cfg.is_flashing = isFullRefresh;
+    } else {
+        fbink_cfg.is_flashing = false;
+    }
+
 
     fbink_refresh(mFbFd, region.top(), region.left(), region.width(), region.height(), &fbink_cfg);
 
     if (waitForRefresh && koboDevice->hasReliableMxcWaitFor)
         fbink_wait_for_complete(mFbFd, LAST_MARKER);
+}
+
+void KoboFbScreen::setFlashing(bool v) {
+    if (debug) qDebug() << "Setting flashing to:" << v;
+    flashingEnabled = v;
 }
 
 QRegion KoboFbScreen::doRedraw()
