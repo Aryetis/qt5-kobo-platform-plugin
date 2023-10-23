@@ -41,6 +41,21 @@ public:
         }
     }
 
+    typedef void (*toggleNightModeType)();
+    static QByteArray toggleNightModeIdentifier()
+    {
+        return QByteArrayLiteral("toggleNightMode");
+    }
+
+    static void toggleNightMode()
+    {
+        auto func = reinterpret_cast<toggleNightModeType>(
+            QGuiApplication::platformFunction(toggleNightModeIdentifier()));
+        if (func) {
+            func();
+        }
+    }
+
     typedef void (*clearScreenType)(bool waitForCompleted);
     static QByteArray clearScreenIdentifier() { return QByteArrayLiteral("clearScreen"); }
 

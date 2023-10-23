@@ -87,12 +87,7 @@ KoboFbScreen::KoboFbScreen(const QStringList &args, KoboDeviceDescriptor *koboDe
       useHardwareDithering(false),
       useSoftwareDithering(true)
 {
-    if(koboDevice->modelName == "nova") {
-        waitForRefresh = true;
-    }
-    else {
-        waitForRefresh = false;
-    }
+    waitForRefresh = false;
     useHardwareDithering = false;
     waveFormFullscreen = WFM_GC16;
     waveFormPartial = WFM_AUTO;
@@ -334,7 +329,6 @@ void KoboFbScreen::doManualRefresh(const QRect &region, bool forceMode, WFM_MODE
         fbink_cfg.is_flashing = false;
     }
 
-
     fbink_refresh(mFbFd, region.top(), region.left(), region.width(), region.height(), &fbink_cfg);
 
     if (waitForRefresh && koboDevice->hasReliableMxcWaitFor)
@@ -345,6 +339,21 @@ void KoboFbScreen::setFlashing(bool v) {
     if (debug) qDebug() << "Setting flashing to:" << v;
     flashingEnabled = v;
 }
+
+void KoboFbScreen::toggleNightMode() {
+    // In future, to preserve this across launches and apps, create a file in dev so user apps will see it too, then check for it
+    nightMode = !nightMode;
+    if (debug) qDebug() << "toggleNightMode called, it is now:" << nightMode;
+    if(fbink_state.can_hw_invert) {
+        fbink_cfg.is_nightmode = nightMode;
+        if (debug) qDebug() << "Using hw night mode";
+    } else {
+        // is_inverted doesnt work for me? why?
+        if (debug) qDebug() << "Hardware night mode not available, using software which does not work?";
+        fbink_cfg.is_inverted = nightMode;
+    }
+}
+
 
 QRegion KoboFbScreen::doRedraw()
 {

@@ -203,8 +203,6 @@ void KoboPlatformIntegration::createInputHandlers()
                 new QLibInputHandler(QLatin1String("libinput"), QString());
                 if(debug) qDebug() << "Created instance of QLibInputHandler";
             }
-        #else
-        #error Libinput libraries are missing - If you don't care, want to debug something unrelated comment this error, but if you want to ship a InkBox OS binary, you need to make this work
         #endif
             if(debug and !libinputBool) qDebug() << "Input backend 'libinput' not found";
 
@@ -251,6 +249,8 @@ QFunctionPointer KoboPlatformIntegration::platformFunction(const QByteArray &fun
         return QFunctionPointer(setFullScreenRefreshModeStatic);
     else if (function == KoboPlatformFunctions::setFlashingIdentifier())
         return QFunctionPointer(setFlashingStatic);
+    else if (function == KoboPlatformFunctions::toggleNightModeIdentifier())
+        return QFunctionPointer(toggleNightModeStatic);
     else if (function == KoboPlatformFunctions::clearScreenIdentifier())
         return QFunctionPointer(clearScreenStatic);
     else if (function == KoboPlatformFunctions::enableDitheringIdentifier())
@@ -274,6 +274,12 @@ void KoboPlatformIntegration::setFlashingStatic(bool v)
     KoboPlatformIntegration *self =
         static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
     self->m_primaryScreen->setFlashing(v);
+}
+
+void KoboPlatformIntegration::toggleNightModeStatic() {
+    KoboPlatformIntegration *self =
+        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    self->m_primaryScreen->toggleNightMode();
 }
 
 void KoboPlatformIntegration::clearScreenStatic(bool waitForCompleted)

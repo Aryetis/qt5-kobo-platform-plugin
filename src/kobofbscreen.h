@@ -50,6 +50,8 @@ public:
 
     void setFlashing(bool v);
 
+    void toggleNightMode();
+
 private:
     void ditherRegion(const QRect &region);
 
@@ -105,6 +107,7 @@ private:
     QRect stopRect = QRect{0, 0, 0, 0};
 
     bool flashingEnabled = true;
+    bool nightMode = false;
 
 };
 

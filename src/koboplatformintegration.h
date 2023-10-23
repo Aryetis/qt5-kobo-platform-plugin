@@ -44,6 +44,7 @@ private:
     void createInputHandlers();
     static void setFullScreenRefreshModeStatic(WaveForm waveform);
     static void setFlashingStatic(bool v);
+    static void toggleNightModeStatic();
     static void clearScreenStatic(bool waitForCompleted);
     static void enableDitheringStatic(bool softwareDithering, bool hardwareDithering);
     static void doManualRefreshStatic(QRect region);
