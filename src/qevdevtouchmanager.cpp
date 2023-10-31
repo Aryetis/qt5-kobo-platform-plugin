@@ -50,6 +50,8 @@
 #include "qevdevtouchhandler_p.h"
 #include "qevdevtouchmanager_p.h"
 
+#include <QTimer>
+
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcEvdevTouch)
@@ -73,25 +75,41 @@ QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specif
     for (const QString &device : qAsConst(parsed.devices))
         addDevice(device);
 
-    // when no devices specified, use device discovery to scan and monitor
-    if (parsed.devices.isEmpty())
+    qCDebug(qLcEvdevTouch, "evdevtouch: Using device discovery");
+    if (auto deviceDiscovery = QDeviceDiscovery::create(
+            QDeviceDiscovery::Device_Touchpad | QDeviceDiscovery::Device_Touchscreen, this))
     {
-        qCDebug(qLcEvdevTouch, "evdevtouch: Using device discovery");
-        if (auto deviceDiscovery = QDeviceDiscovery::create(
-                QDeviceDiscovery::Device_Touchpad | QDeviceDiscovery::Device_Touchscreen, this))
-        {
-            const QStringList devices = deviceDiscovery->scanConnectedDevices();
-            for (const QString &device : devices)
-                addDevice(device);
+        const QStringList devices = deviceDiscovery->scanConnectedDevices();
 
-            connect(deviceDiscovery, &QDeviceDiscovery::deviceDetected, this, &QEvdevTouchManager::addDevice);
-            connect(deviceDiscovery, &QDeviceDiscovery::deviceRemoved, this,
-                    &QEvdevTouchManager::removeDevice);
+        // Periodic scanning for reasons
+//        discovery = deviceDiscovery;
+//        QTimer* timer = new QTimer(this);
+//        timer->setInterval(1000);
+//        connect(timer, &QTimer::timeout, this, &QEvdevTouchManager::periodicScan);
+//        timer->start();
+
+        for (const QString &device : devices) {
+            if(parsed.devices.contains(device) == false) {
+                addDevice(device);
+            }
         }
+
+        connect(deviceDiscovery, &QDeviceDiscovery::deviceDetected, this, &QEvdevTouchManager::addDevice);
+        connect(deviceDiscovery, &QDeviceDiscovery::deviceRemoved, this,
+                &QEvdevTouchManager::removeDevice);
     }
 }
 
 QEvdevTouchManager::~QEvdevTouchManager() {}
+
+//void QEvdevTouchManager::periodicScan() {
+//    qCDebug(qLcEvdevTouch, "evdevtouch: periodic scan");
+//    const QStringList devices = discovery->scanConnectedDevices();
+//    qDebug() << devices;
+
+//    //for (const QString &device : devices)
+//    //    addDevice(device);
+//}
 
 void QEvdevTouchManager::addDevice(const QString &deviceNode)
 {
@@ -105,7 +123,7 @@ void QEvdevTouchManager::addDevice(const QString &deviceNode)
     }
     else
     {
-        qWarning("evdevtouch: Failed to open touch device %ls", qUtf16Printable(deviceNode));
+        qDebug("evdevtouch: Failed to open touch device %ls", qUtf16Printable(deviceNode));
     }
 }
 

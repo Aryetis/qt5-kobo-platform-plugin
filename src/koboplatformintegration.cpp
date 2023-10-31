@@ -43,13 +43,13 @@ void KoboPlatformIntegration::initialize()
     if (m_primaryScreen->initialize())
         QWindowSystemInterface::handleScreenAdded(m_primaryScreen);
     else
-        qWarning("kobofb: Failed to initialize screen");
+        qDebug("kobofb: Failed to initialize screen");
 
     m_inputContext = QPlatformInputContextFactory::create();
 
     createInputHandlers();
 
-    qWarning("kobofb: Finished initialization.");
+    qDebug("kobofb: Finished initialization.");
 }
 
 bool KoboPlatformIntegration::hasCapability(QPlatformIntegration::Capability cap) const

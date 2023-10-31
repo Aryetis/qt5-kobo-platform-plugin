@@ -72,10 +72,12 @@ public:
     void removeDevice(const QString &deviceNode);
 
     void updateInputDeviceCount();
+    //void periodicScan();
 
 private:
     QString m_spec;
     QtInputSupport::DeviceHandlerList<QEvdevTouchScreenHandlerThread> m_activeDevices;
+    //QDeviceDiscovery* discovery;
 };
 
 QT_END_NAMESPACE

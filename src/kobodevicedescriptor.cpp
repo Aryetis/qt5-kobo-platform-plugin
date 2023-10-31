@@ -344,7 +344,7 @@ KoboDeviceDescriptor determineDevice()
         fbDevice = QLatin1String("/dev/graphics/fb0");
     if (!QFile::exists(fbDevice))
     {
-        qWarning("Unable to figure out framebuffer device. Specify it manually.");
+        qDebug("Unable to figure out framebuffer device. Specify it manually.");
         // return false;
     }
 
