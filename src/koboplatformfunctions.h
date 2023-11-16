@@ -26,6 +26,48 @@ public:
             func(waveform);
     }
 
+    typedef void (*setPartialScreenRefreshModeType)(WaveForm waveform);
+    static QByteArray setPartialScreenRefreshModeIdentifier()
+    {
+        return QByteArrayLiteral("setPartialScreenRefreshMode");
+    }
+
+    static void setPartialScreenRefreshMode(WaveForm waveform)
+    {
+        auto func = reinterpret_cast<setPartialScreenRefreshModeType>(
+            QGuiApplication::platformFunction(setPartialScreenRefreshModeIdentifier()));
+        if (func)
+            func(waveform);
+    }
+
+    typedef void (*setFastScreenRefreshModeType)(WaveForm waveform);
+    static QByteArray setFastScreenRefreshModeIdentifier()
+    {
+        return QByteArrayLiteral("setFastScreenRefreshMode");
+    }
+
+    static void setFastScreenRefreshMode(WaveForm waveform)
+    {
+        auto func = reinterpret_cast<setFastScreenRefreshModeType>(
+            QGuiApplication::platformFunction(setFastScreenRefreshModeIdentifier()));
+        if (func)
+            func(waveform);
+    }
+
+    typedef void (*setDefaultWaveformType)();
+    static QByteArray setDefaultWaveformIdentifier()
+    {
+        return QByteArrayLiteral("setDefaultWaveform");
+    }
+
+    static void setDefaultWaveform()
+    {
+        auto func = reinterpret_cast<setDefaultWaveformType>(
+            QGuiApplication::platformFunction(setDefaultWaveformIdentifier()));
+        if (func)
+            func();
+    }
+
     typedef void (*setFlashingType)(bool v);
     static QByteArray setFlashingIdentifier()
     {

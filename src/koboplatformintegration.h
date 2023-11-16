@@ -43,6 +43,9 @@ public:
 private:
     void createInputHandlers();
     static void setFullScreenRefreshModeStatic(WaveForm waveform);
+    static void setPartialScreenRefreshModeStatic(WaveForm waveform);
+    static void setFastScreenRefreshModeStatic(WaveForm waveform);
+    static void setDefaultWaveformStatic();
     static void setFlashingStatic(bool v);
     static void toggleNightModeStatic();
     static void clearScreenStatic(bool waitForCompleted);

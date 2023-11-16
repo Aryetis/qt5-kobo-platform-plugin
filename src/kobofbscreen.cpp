@@ -89,6 +89,11 @@ KoboFbScreen::KoboFbScreen(const QStringList &args, KoboDeviceDescriptor *koboDe
 {
     waitForRefresh = false;
     useHardwareDithering = false;
+    setDefaultWaveform();
+}
+
+void KoboFbScreen::setDefaultWaveform() {
+    if(debug) qDebug() << "Set default waveform called";
     waveFormFullscreen = WFM_GC16;
     waveFormPartial = WFM_AUTO;
     waveFormFast = WFM_A2;
@@ -266,7 +271,20 @@ ScreenRotation KoboFbScreen::getScreenRotation()
 
 void KoboFbScreen::setFullScreenRefreshMode(WaveForm waveform)
 {
+    if(debug) qDebug() << "setFullScreenRefreshMode called";
     this->waveFormFullscreen = waveform;
+}
+
+void KoboFbScreen::setPartialScreenRefreshMode(WaveForm waveform)
+{
+    if(debug) qDebug() << "setPartialScreenRefreshMode called";
+    this->waveFormPartial = waveform;
+}
+
+void KoboFbScreen::setFastScreenRefreshMode(WaveForm waveform)
+{
+    if(debug) qDebug() << "setFastScreenRefreshMode called";
+    this->waveFormFast = waveform;
 }
 
 void KoboFbScreen::clearScreen(bool waitForCompleted)

@@ -30,6 +30,10 @@ public:
 
     void setFullScreenRefreshMode(WaveForm waveform);
 
+    void setPartialScreenRefreshMode(WaveForm waveform);
+
+    void setFastScreenRefreshMode(WaveForm waveform);
+
     void clearScreen(bool waitForCompleted);
 
     void enableDithering(bool softwareDithering, bool hardwareDithering);
@@ -51,6 +55,8 @@ public:
     void setFlashing(bool v);
 
     void toggleNightMode();
+
+    void setDefaultWaveform();
 
 private:
     void ditherRegion(const QRect &region);

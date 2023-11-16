@@ -247,6 +247,12 @@ QFunctionPointer KoboPlatformIntegration::platformFunction(const QByteArray &fun
 {
     if (function == KoboPlatformFunctions::setFullScreenRefreshModeIdentifier())
         return QFunctionPointer(setFullScreenRefreshModeStatic);
+    else if (function == KoboPlatformFunctions::setPartialScreenRefreshModeIdentifier())
+        return QFunctionPointer(setPartialScreenRefreshModeStatic);
+    else if (function == KoboPlatformFunctions::setFlashingIdentifier())
+        return QFunctionPointer(setFastScreenRefreshModeStatic);
+    else if (function == KoboPlatformFunctions::setFlashingIdentifier())
+        return QFunctionPointer(setDefaultWaveformStatic);
     else if (function == KoboPlatformFunctions::setFlashingIdentifier())
         return QFunctionPointer(setFlashingStatic);
     else if (function == KoboPlatformFunctions::toggleNightModeIdentifier())
@@ -267,6 +273,27 @@ void KoboPlatformIntegration::setFullScreenRefreshModeStatic(WaveForm waveform)
     KoboPlatformIntegration *self =
         static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
     self->m_primaryScreen->setFullScreenRefreshMode(waveform);
+}
+
+void KoboPlatformIntegration::setPartialScreenRefreshModeStatic(WaveForm waveform)
+{
+    KoboPlatformIntegration *self =
+        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    self->m_primaryScreen->setPartialScreenRefreshMode(waveform);
+}
+
+void KoboPlatformIntegration::setFastScreenRefreshModeStatic(WaveForm waveform)
+{
+    KoboPlatformIntegration *self =
+        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    self->m_primaryScreen->setFastScreenRefreshMode(waveform);
+}
+
+void KoboPlatformIntegration::setDefaultWaveformStatic()
+{
+    KoboPlatformIntegration *self =
+        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    self->m_primaryScreen->setDefaultWaveform();
 }
 
 void KoboPlatformIntegration::setFlashingStatic(bool v)
