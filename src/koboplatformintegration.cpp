@@ -249,9 +249,9 @@ QFunctionPointer KoboPlatformIntegration::platformFunction(const QByteArray &fun
         return QFunctionPointer(setFullScreenRefreshModeStatic);
     else if (function == KoboPlatformFunctions::setPartialScreenRefreshModeIdentifier())
         return QFunctionPointer(setPartialScreenRefreshModeStatic);
-    else if (function == KoboPlatformFunctions::setFlashingIdentifier())
+    else if (function == KoboPlatformFunctions::setFastScreenRefreshModeIdentifier())
         return QFunctionPointer(setFastScreenRefreshModeStatic);
-    else if (function == KoboPlatformFunctions::setFlashingIdentifier())
+    else if (function == KoboPlatformFunctions::setDefaultWaveformIdentifier())
         return QFunctionPointer(setDefaultWaveformStatic);
     else if (function == KoboPlatformFunctions::setFlashingIdentifier())
         return QFunctionPointer(setFlashingStatic);

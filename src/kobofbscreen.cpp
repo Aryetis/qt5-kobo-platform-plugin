@@ -347,10 +347,24 @@ void KoboFbScreen::doManualRefresh(const QRect &region, bool forceMode, WFM_MODE
         fbink_cfg.is_flashing = false;
     }
 
-    fbink_refresh(mFbFd, region.top(), region.left(), region.width(), region.height(), &fbink_cfg);
-
-    if (waitForRefresh && koboDevice->hasReliableMxcWaitFor)
-        fbink_wait_for_complete(mFbFd, LAST_MARKER);
+    // Don't remove this, gives better results and is more error proof
+    // Gives much less ghosting, leave this or I leave. ;)
+    int rv = fbink_refresh(mFbFd, region.top(), region.left(), region.width(), region.height(), &fbink_cfg);
+    if (rv != EXIT_SUCCESS && errno == EPERM) {
+        qDebug() << "QPA: Detected framebuffer freeze, attempting to fix ...";
+        unsigned long arg = VESA_NO_BLANKING;
+        if (ioctl(mFbFd, FBIOBLANK, arg) == EXIT_SUCCESS) {
+            rv = fbink_refresh(mFbFd, region.top(), region.left(), region.width(), region.height(), &fbink_cfg);
+        }
+    }
+    if (rv == EXIT_SUCCESS && waitForRefresh) {
+        if (koboDevice->hasReliableMxcWaitFor) {
+            fbink_wait_for_complete(mFbFd, LAST_MARKER);
+        }
+        else {
+            usleep(1000);
+        }
+    }
 }
 
 void KoboFbScreen::setFlashing(bool v) {
