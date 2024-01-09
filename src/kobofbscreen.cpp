@@ -87,7 +87,12 @@ KoboFbScreen::KoboFbScreen(const QStringList &args, KoboDeviceDescriptor *koboDe
       useHardwareDithering(false),
       useSoftwareDithering(true)
 {
-    waitForRefresh = false;
+    if(koboDevice->modelName == "nova") {
+        waitForRefresh = true;
+    }
+    else {
+        waitForRefresh = false;
+    }
     useHardwareDithering = false;
     setDefaultWaveform();
 }
@@ -341,14 +346,14 @@ void KoboFbScreen::doManualRefresh(const QRect &region, bool forceMode, WFM_MODE
         fbink_cfg.wfm_mode = waveformMode;
     }
 
+
     if(flashingEnabled == true) {
         fbink_cfg.is_flashing = isFullRefresh;
-    } else {
+    }
+    else {
         fbink_cfg.is_flashing = false;
     }
 
-    // Don't remove this, gives better results and is more error proof
-    // Gives much less ghosting, leave this or I leave. ;)
     int rv = fbink_refresh(mFbFd, region.top(), region.left(), region.width(), region.height(), &fbink_cfg);
     if (rv != EXIT_SUCCESS && errno == EPERM) {
         qDebug() << "QPA: Detected framebuffer freeze, attempting to fix ...";
@@ -357,6 +362,7 @@ void KoboFbScreen::doManualRefresh(const QRect &region, bool forceMode, WFM_MODE
             rv = fbink_refresh(mFbFd, region.top(), region.left(), region.width(), region.height(), &fbink_cfg);
         }
     }
+
     if (rv == EXIT_SUCCESS && waitForRefresh) {
         if (koboDevice->hasReliableMxcWaitFor) {
             fbink_wait_for_complete(mFbFd, LAST_MARKER);
@@ -373,12 +379,12 @@ void KoboFbScreen::setFlashing(bool v) {
 }
 
 void KoboFbScreen::toggleNightMode() {
-    // In future, to preserve this across launches and apps, create a file in dev so user apps will see it too, then check for it
+    // In the future, to preserve this across launches and apps, create a file in dev so user apps will see it too, then check for it
     nightMode = !nightMode;
     if (debug) qDebug() << "toggleNightMode called, it is now:" << nightMode;
     if(fbink_state.can_hw_invert) {
         fbink_cfg.is_nightmode = nightMode;
-        if (debug) qDebug() << "Using hw night mode";
+        if (debug) qDebug() << "Using hardware night mode";
     } else {
         // is_inverted doesnt work for me? why?
         if (debug) qDebug() << "Hardware night mode not available, using software which does not work?";
@@ -455,7 +461,7 @@ void KoboFbScreen::mouseMoveChecker() {
             QImage tmp{"/cursor.png"};
             mBlitter->drawImage(QRect{stopRect.x(), stopRect.y(), 100, 100}, tmp, QRect{0, 100, 100, 100});
             doManualRefresh(QRect{stopRect.x(), stopRect.y(), 100, 100});
-	    */
+        */
         }
 
         if (motionDebug) qDebug() << "Mouse moved:" << mCursor->pos();
@@ -496,7 +502,7 @@ void KoboFbScreen::mouseMoveChecker() {
         }
         /* Debug
         cleanStopFragment.save("/tmp/cleanStopFragment.png", nullptr, -1);
-	*/
+    */
 
         // Actually request rendering it
         renderCursor = true;
