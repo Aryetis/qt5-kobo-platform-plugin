@@ -1,6 +1,6 @@
 TARGET = kobo
 
-QTDIR = /mnt/onboard/.adds/qt-linux-5.15-kde-kobo
+QTDIR = /mnt/onboard/.adds/qt-linux-5.15-kobo
 CROSS_TC = arm-kobo-linux-gnueabihf
 
 TEMPLATE = lib
