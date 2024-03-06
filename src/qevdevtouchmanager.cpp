@@ -37,102 +37,94 @@
 **
 ****************************************************************************/
 
-#include <QtDeviceDiscoverySupport/private/qdevicediscovery_p.h>
-#include <QtInputSupport/private/qevdevutil_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qinputdevicemanager_p_p.h>
-#include <private/qmemory_p.h>
 
 #include <QGuiApplication>
 #include <QLoggingCategory>
 #include <QStringList>
 
-#include "qevdevtouchhandler_p.h"
+#include "qevdevtouchhandlerthread.h"
 #include "qevdevtouchmanager_p.h"
-
-#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcEvdevTouch)
+Q_DECLARE_LOGGING_CATEGORY(qLcEvdevTouch2)
+Q_DECLARE_LOGGING_CATEGORY(qLcEvdevTouch3)
 
-QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specification, QObject *parent)
-    : QObject(parent)
+QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specification, QObject *parent, KoboFbScreen *koboFbScreen)
+    : QObject(parent), koboFbScreen(koboFbScreen)
 {
     Q_UNUSED(key);
 
     if (qEnvironmentVariableIsSet("QT_QPA_EVDEV_DEBUG"))
+    {
         const_cast<QLoggingCategory &>(qLcEvdevTouch()).setEnabled(QtDebugMsg, true);
+        const_cast<QLoggingCategory &>(qLcEvdevTouch2()).setEnabled(QtDebugMsg, true);
+        const_cast<QLoggingCategory &>(qLcEvdevTouch3()).setEnabled(QtDebugMsg, true);
+    }
 
     QString spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS"));
 
     if (spec.isEmpty())
         spec = specification;
 
-    auto parsed = QEvdevUtil::parseSpecification(spec);
-    m_spec = std::move(parsed.spec);
+    m_spec = spec;
 
-    for (const QString &device : qAsConst(parsed.devices))
-        addDevice(device);
+    auto args = spec.splitRef(QLatin1Char(':'));
 
-    qCDebug(qLcEvdevTouch, "evdevtouch: Using device discovery");
-    if (auto deviceDiscovery = QDeviceDiscovery::create(
-            QDeviceDiscovery::Device_Touchpad | QDeviceDiscovery::Device_Touchscreen, this))
+    for (const QStringRef &arg : qAsConst(args))
     {
-        const QStringList devices = deviceDiscovery->scanConnectedDevices();
-
-        // Periodic scanning for reasons
-//        discovery = deviceDiscovery;
-//        QTimer* timer = new QTimer(this);
-//        timer->setInterval(1000);
-//        connect(timer, &QTimer::timeout, this, &QEvdevTouchManager::periodicScan);
-//        timer->start();
-
-        for (const QString &device : devices) {
-            if(parsed.devices.contains(device) == false) {
-                addDevice(device);
-            }
+        if (arg.startsWith(QLatin1String("/dev/")))
+        {
+            // if device is specified try to use it
+            devicePaths.append(arg.toString());
         }
-
-        connect(deviceDiscovery, &QDeviceDiscovery::deviceDetected, this, &QEvdevTouchManager::addDevice);
-        connect(deviceDiscovery, &QDeviceDiscovery::deviceRemoved, this,
-                &QEvdevTouchManager::removeDevice);
+        else
+        {
+            if (!spec.isEmpty())
+                spec += QLatin1Char(':');
+            // build new specification without /dev/ elements
+            spec += arg;
+        }
     }
+
+
+    for (const QString &device : qAsConst(devicePaths))
+        addDevice(device);
 }
 
 QEvdevTouchManager::~QEvdevTouchManager() {}
 
-//void QEvdevTouchManager::periodicScan() {
-//    qCDebug(qLcEvdevTouch, "evdevtouch: periodic scan");
-//    const QStringList devices = discovery->scanConnectedDevices();
-//    qDebug() << devices;
-
-//    //for (const QString &device : devices)
-//    //    addDevice(device);
-//}
-
 void QEvdevTouchManager::addDevice(const QString &deviceNode)
 {
     qCDebug(qLcEvdevTouch, "evdevtouch: Adding device at %ls", qUtf16Printable(deviceNode));
-    auto handler = qt_make_unique<QEvdevTouchScreenHandlerThread>(deviceNode, m_spec);
+    auto handler = std::unique_ptr<QEvdevTouchScreenHandlerThread>{
+        new QEvdevTouchScreenHandlerThread(deviceNode, m_spec, this, koboFbScreen)};
     if (handler)
     {
         connect(handler.get(), &QEvdevTouchScreenHandlerThread::touchDeviceRegistered, this,
                 &QEvdevTouchManager::updateInputDeviceCount);
-        m_activeDevices.add(deviceNode, std::move(handler));
+        m_activeDevices.push_back({deviceNode, std::move(handler)});
     }
     else
     {
-        qDebug("evdevtouch: Failed to open touch device %ls", qUtf16Printable(deviceNode));
+        qWarning("evdevtouch: Failed to open touch device %ls", qUtf16Printable(deviceNode));
     }
 }
 
 void QEvdevTouchManager::removeDevice(const QString &deviceNode)
 {
-    if (m_activeDevices.remove(deviceNode))
+    for (uint i = 0; i < m_activeDevices.size(); i++)
     {
-        qCDebug(qLcEvdevTouch, "evdevtouch: Removing device at %ls", qUtf16Printable(deviceNode));
-        updateInputDeviceCount();
+        if (m_activeDevices[i].deviceNode == deviceNode)
+        {
+            m_activeDevices.erase(m_activeDevices.begin() + i);
+
+            qCDebug(qLcEvdevTouch, "evdevtouch: Removing device at %ls", qUtf16Printable(deviceNode));
+            updateInputDeviceCount();
+        }
     }
 }
 
@@ -147,10 +139,10 @@ void QEvdevTouchManager::updateInputDeviceCount()
 
     qCDebug(qLcEvdevTouch,
             "evdevtouch: Updating QInputDeviceManager device count: %d touch devices, %d pending handler(s)",
-            registeredTouchDevices, m_activeDevices.count() - registeredTouchDevices);
+            registeredTouchDevices, m_activeDevices.size() - registeredTouchDevices);
 
-    QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())
-        ->setDeviceCount(QInputDeviceManager::DeviceTypeTouch, registeredTouchDevices);
+        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())
+            ->setDeviceCount(QInputDeviceManager::DeviceTypeTouch, registeredTouchDevices);
 }
 
 QT_END_NAMESPACE

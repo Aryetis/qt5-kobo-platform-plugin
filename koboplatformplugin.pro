@@ -35,22 +35,25 @@ QMAKE_EXTRA_COMPILERS += FBInkBuildEvent
 INCLUDEPATH += $$PWD/FBInk $$PWD/FBInk/libi2c-staged/include
 LIBS += -L$$PWD/FBInk/libi2c-staged/lib/ -l:libi2c.a
 
-CONFIG(debug, debug|release) {
-    FBInkBuildEvent.commands = CROSS_TC=$$CROSS_TC MINIMAL=1 DRAW=1 DEBUG=1 KOBO=true make -C $$PWD/FBInk pic
-    LIBS += -L$$PWD/FBInk/Debug -l:libfbink.a
-}
+# We always want release.
+# CONFIG(debug, debug|release) {
+#     FBInkBuildEvent.commands = CROSS_TC=$$CROSS_TC MINIMAL=1 DRAW=1 DEBUG=1 KOBO=true make -C $$PWD/FBInk pic
+#     LIBS += -L$$PWD/FBInk/Debug -l:libfbink.a
+# }
 
 CONFIG(release, debug|release) {
 FBInkBuildEvent.commands = CROSS_TC=$$CROSS_TC MINIMAL=1 DRAW=1 KOBO=true make -C $$PWD/FBInk pic
     LIBS += -L$$PWD/FBInk/Release -l:libfbink.a
 }
 
-
 SOURCES = src/main.cpp \
           src/dither.cpp \
           src/kobodevicedescriptor.cpp \
           src/kobofbscreen.cpp \
           src/koboplatformintegration.cpp \
+          src/qevdevtouchdata.cpp \
+          src/qevdevtouchdata2.cpp \
+          src/qevdevtouchhandlerthread.cpp \
           src/qevdevtouchmanager.cpp \
           src/qevdevtouchhandler.cpp
 
@@ -61,8 +64,11 @@ HEADERS = \
           src/kobofbscreen.h \
           src/koboplatformfunctions.h \
           src/koboplatformintegration.h \
+          src/qevdevtouchdata.h \
+          src/qevdevtouchdata2.h \
           src/qevdevtouchfilter_p.h \
-          src/qevdevtouchhandler_p.h \
+          src/qevdevtouchhandler.h \
+          src/qevdevtouchhandlerthread.h \
           src/qevdevtouchmanager_p.h
 
 
@@ -77,3 +83,8 @@ DISTFILES += \
 RESOURCES += \
     resources.qrc
 
+DESTDIR = build/ereader
+OBJECTS_DIR = build/ereader/obj
+MOC_DIR = build/ereader/moc
+RCC_DIR = build/ereader/rcc
+UI_DIR = build/ereader/ui

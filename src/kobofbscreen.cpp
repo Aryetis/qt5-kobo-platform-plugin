@@ -87,13 +87,16 @@ KoboFbScreen::KoboFbScreen(const QStringList &args, KoboDeviceDescriptor *koboDe
       useHardwareDithering(false),
       useSoftwareDithering(true)
 {
+
+    // This didn't worked anyway and this is a horrible implementation of it
+    /*
     if(koboDevice->modelName == "nova") {
         waitForRefresh = true;
     }
-    else {
-        waitForRefresh = false;
-    }
-    useHardwareDithering = false;
+    */
+
+    useHardwareDithering = false; // TODO: What even is this?
+
     setDefaultWaveform();
 }
 
@@ -187,7 +190,8 @@ bool KoboFbScreen::initialize()
     originalBpp = fbink_state.bpp;
     originalRotation = fbink_state.current_rota;
 
-    // Listen to /sys/class/graphics/fb0/rotate...
+    // Don't listed to the sys interface, that's a very bad idea as Niluje explained.
+    // But we use native FBInk so that's good?
     setScreenRotation(getScreenRotation());
 
     QFbScreen::initializeCompositor();
@@ -272,6 +276,16 @@ bool KoboFbScreen::setScreenRotation(ScreenRotation r, int bpp)
 ScreenRotation KoboFbScreen::getScreenRotation()
 {
     return (ScreenRotation)fbink_rota_native_to_canonical(fbink_state.current_rota);
+}
+
+FBInkConfig *KoboFbScreen::getFBInkConfig()
+{
+    return &fbink_cfg;
+}
+
+FBInkState *KoboFbScreen::getFBInkState()
+{
+    return &fbink_state;
 }
 
 void KoboFbScreen::setFullScreenRefreshMode(WaveForm waveform)
@@ -395,8 +409,11 @@ void KoboFbScreen::toggleNightMode() {
 
 QRegion KoboFbScreen::doRedraw()
 {
-    QElapsedTimer t;
-    if (debug) t.start();
+    QElapsedTimer* t;
+    if (motionDebug)  {
+        t = new QElapsedTimer();
+        t->start();
+    }
     QRegion touched = QFbScreen::doRedraw();
 
     if (touched.isEmpty())
@@ -439,7 +456,10 @@ QRegion KoboFbScreen::doRedraw()
 
     doManualRefresh(r);
 
-    if (motionDebug) qDebug() << "Painted region" << touched << "in" << t.elapsed() << "ms";
+    if (motionDebug) {
+        qDebug() << "Painted region" << touched << "in" << t->elapsed() << "ms";
+        delete[] t;
+    } 
 
     return touched;
 }
@@ -557,4 +577,25 @@ void KoboFbScreen::mouseMoveChecker() {
            }
        }
     }
+}
+
+
+void KoboFbScreen::doSunxiPenRefresh()
+{
+    // NOTE: On sunxi, send a !pen refresh on pen up because otherwise the driver
+    // softlocks,
+    //       and ultimately trips a reboot watchdog...
+    // NOTE: Nickel also toggles pen mode *off* before doing that...
+    //       Let's do the same, as we can still somewhat reliably kill the kernel
+    //       one way or another otherwise...
+    // NOTE: That means that any other competing refresh is potentially dangerous:
+    //       make sure only pen refreshes are sent while in pen mode!
+    fbink_sunxi_toggle_ntx_pen_mode(mFbFd, false);
+
+    const WFM_MODE_INDEX_T pen_wfm = fbink_cfg.wfm_mode;
+    fbink_cfg.wfm_mode = WFM_GL16;
+    fbink_refresh(mFbFd, 0, 0, 0, 0, &fbink_cfg);
+    fbink_cfg.wfm_mode = pen_wfm;
+
+    fbink_sunxi_toggle_ntx_pen_mode(mFbFd, true);
 }

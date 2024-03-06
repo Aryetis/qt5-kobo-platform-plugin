@@ -58,6 +58,12 @@ public:
 
     void setDefaultWaveform();
 
+    FBInkConfig* getFBInkConfig();
+
+    FBInkState* getFBInkState();
+
+    void doSunxiPenRefresh();
+
 private:
     void ditherRegion(const QRect &region);
 
