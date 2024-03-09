@@ -13,11 +13,11 @@
 #endif
 
 #if QT_CONFIG(evdev)
-#include <QtInputSupport/private/qevdevmousemanager_p.h>
 #include <QtInputSupport/private/qevdevkeyboardmanager_p.h>
+#include <QtInputSupport/private/qevdevmousemanager_p.h>
 #endif
 
-#include <QtInputSupport/private/qevdevtouchmanager_p.h> // Always needed
+#include "qevdevtouchmanager_p.h"
 
 KoboPlatformIntegration::KoboPlatformIntegration(const QStringList &paramList)
     : m_paramList(paramList),
@@ -49,7 +49,8 @@ void KoboPlatformIntegration::initialize()
 
     createInputHandlers();
 
-    qDebug("kobofb: Finished initialization.");
+    qDebug("Platform plugin: Finished initialization.");
+    qDebug() << "git hash commit:" << GIT_COMMIT_HASH << "git user:" << GIT_USER << "compilation time:" << COMP_TIME;
 }
 
 bool KoboPlatformIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -112,6 +113,7 @@ void KoboPlatformIntegration::createInputHandlers()
     bool manualRangeFlip = false;
     int touchRangeX = 0;
     int touchRangeY = 0;
+    bool experimentaltouchhandler = false;
     bool keyboard = false;
     bool mouse = false;
 
@@ -119,20 +121,26 @@ void KoboPlatformIntegration::createInputHandlers()
 
     for (const QString &arg : qAsConst(m_paramList))
     {
-        if (arg.startsWith("debug"))
+        if (arg.contains("debug")) {
             debug = true;
-        // Those debug messages will not be seen if 'debug' is the latest argument
-        if(arg.startsWith("keyboard")) {
-            if(debug) qDebug() << "Keyboard support enabled";
-            keyboard = true;
-        }
-        if(arg.startsWith("mouse")) {
-            if(debug) qDebug() << "Mouse support enabled";
-            mouse = true;
         }
         QRegularExpressionMatch match;
-        if (arg.contains(touchDevRx, &match))
+        // Those debug messages will not be seen if 'debug' is the latest argument
+        if (arg.startsWith("keyboard"))
+        {
+            if (debug)
+                qDebug() << "Keyboard support enabled";
+            keyboard = true;
+        }
+        if (arg.startsWith("mouse"))
+        {
+            if (debug)
+                qDebug() << "Mouse support enabled";
+            mouse = true;
+        }
+        if (arg.contains(touchDevRx, &match)) {
             touchscreenDevice = match.captured(1);
+        }
         if (arg.contains(touchSwapXYRx, &match) && match.captured(1).toInt() > 0)
         {
             koboDevice.touchscreenSettings.swapXY = true;
@@ -157,6 +165,10 @@ void KoboPlatformIntegration::createInputHandlers()
         {
             manualRangeFlip = true;
         }
+        if (arg.contains("experimentaltouchhandler"))
+        {
+            experimentaltouchhandler = true;
+        }
     }
 
     bool flipTouchscreenAxes = koboDevice.touchscreenSettings.swapXY ^ (screenrot & 1);
@@ -178,59 +190,77 @@ void KoboPlatformIntegration::createInputHandlers()
         evdevTouchArgs += QString(":hw_range_x_max=%1").arg(touchRangeX);
     if (touchRangeY > 0)
         evdevTouchArgs += QString(":hw_range_y_max=%1").arg(touchRangeY);
+    if (experimentaltouchhandler)
+        evdevTouchArgs += ":experimentaltouchhandler";
 
     evdevTouchArgs += QString(":screenwidth=%1").arg(koboDevice.width);
     evdevTouchArgs += QString(":screenheight=%1").arg(koboDevice.height);
 
     evdevTouchArgs += QString(":screenrotation=%1").arg(screenrot * 90);
 
-    new QEvdevTouchManager("EvdevTouch", evdevTouchArgs, this);
-
+    new QEvdevTouchManager("EvdevTouch", evdevTouchArgs, this, m_primaryScreen);
     if (debug)
         qDebug() << "device:" << koboDevice.modelName << koboDevice.modelNumber << '\n'
-                 << "screen:" << koboDevice.width << koboDevice.height << "dpi:" << koboDevice.dpi;
+                 << "screen:" << koboDevice.width << koboDevice.height << "dpi:" << koboDevice.dpi
+                 << "rotation:" << screenrot;
 
     // A bit of inspiration: https://github.com/librereader/qpa-einkfb
-    if(keyboard == true or mouse == true) {
+    if (keyboard == true or mouse == true)
+    {
         bool libinputBool = false;
-        bool evdevBool = false; // Probably not needed
+        bool evdevBool = false;  // Probably not needed
 
-        #if QT_CONFIG(libinput)
-            libinputBool = true;
-            if(debug) qDebug() << "Using libinput as input backend for peripherals";
+#if QT_CONFIG(libinput)
+        libinputBool = true;
+        if (debug)
+            qDebug() << "Using libinput as input backend for peripherals";
 
-            if(keyboard or mouse) {
-                new QLibInputHandler(QLatin1String("libinput"), QString());
-                if(debug) qDebug() << "Created instance of QLibInputHandler";
+        if (keyboard or mouse)
+        {
+            new QLibInputHandler(QLatin1String("libinput"), QString());
+            if (debug)
+                qDebug() << "Created instance of QLibInputHandler";
+        }
+#else
+#error libinput libraries are missing - If you do not care, want to debug something unrelated comment this error, but if you want to ship a InkBox OS binary, you need to make this work
+#endif
+        if (debug and !libinputBool)
+            qDebug() << "Input backend 'libinput' not found";
+
+#if QT_CONFIG(evdev)
+        if (!libinputBool)
+        {
+            evdevBool = true;
+            if (debug)
+                qDebug() << "Additional input libraries aren't available; using evdev";
+            if (keyboard)
+            {
+                new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
+                if (debug)
+                    qDebug() << "Created instance of QEvdevKeyboardManager";
             }
-        #else
-        #error libinput libraries are missing - If you do not care, want to debug something unrelated comment this error, but if you want to ship a InkBox OS binary, you need to make this work
-	#endif
-            if(debug and !libinputBool) qDebug() << "Input backend 'libinput' not found";
-
-        #if QT_CONFIG(evdev)
-            if(!libinputBool) {
-                evdevBool = true;
-                if(debug) qDebug() << "Additional input libraries aren't available; using evdev";
-                if(keyboard) {
-                    new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
-                    if(debug) qDebug() << "Created instance of QEvdevKeyboardManager";
-                }
-                if(mouse) {
-                    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
-                    if(debug) qDebug() << "Created instance of QEvdevMouseManager";
-                }
+            if (mouse)
+            {
+                new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
+                if (debug)
+                    qDebug() << "Created instance of QEvdevMouseManager";
             }
-        #endif
+        }
+#endif
 
-        if(mouse and (evdevBool or libinputBool)) {
+        if (mouse and (evdevBool or libinputBool))
+        {
             // This is actually needed to make the cursor appear... Very important
-            QMouseEvent *event = new QMouseEvent(QEvent::MouseMove, QPoint(koboDevice.width / 2, koboDevice.height / 2), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+            QMouseEvent *event =
+                new QMouseEvent(QEvent::MouseMove, QPoint(koboDevice.width / 2, koboDevice.height / 2),
+                                Qt::NoButton, Qt::NoButton, Qt::NoModifier);
             m_primaryScreen->mCursor->pointerEvent(*event);
         }
 
-        if((libinputBool or evdevBool) and debug) {
-            qDebug() << "WARNING: Additional command line arguments may be required for input. Please read the documentation.";
+        if ((libinputBool or evdevBool) and debug)
+        {
+            qDebug() << "WARNING: Additional command line arguments may be required for input. Please read "
+                        "the documentation.";
         }
     }
 }
@@ -305,7 +335,8 @@ void KoboPlatformIntegration::setFlashingStatic(bool v)
     self->m_primaryScreen->setFlashing(v);
 }
 
-void KoboPlatformIntegration::toggleNightModeStatic() {
+void KoboPlatformIntegration::toggleNightModeStatic()
+{
     KoboPlatformIntegration *self =
         static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
     self->m_primaryScreen->toggleNightMode();

@@ -362,7 +362,7 @@ KoboDeviceDescriptor determineDevice()
     // Open the device
     if (mFbFd == -1)
     {
-        qErrnoWarning(errno, "Failed to open framebuffer %s", qPrintable(fbDevice));
+        qDebug("Failed to open framebuffer %s", qPrintable(fbDevice));
         // return false;
     }
 
@@ -370,7 +370,7 @@ KoboDeviceDescriptor determineDevice()
 
     if (ioctl(mFbFd, FBIOGET_VSCREENINFO, &vinfo))
     {
-        qErrnoWarning(errno, "Error reading variable information");
+        qDebug("Error reading variable information");
     }
 
     QRect geometry = determineGeometry(vinfo);

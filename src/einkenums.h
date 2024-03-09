@@ -23,10 +23,10 @@ static const QMap<int, KoboKey> KoboPhysicalKeyMap = {
 
 enum ScreenRotation
 {
-    RotationUR = 0,
-    RotationCW = 1,
-    RotationUD = 2,
-    RotationCCW = 3
+    RotationUR = 0, // Upside right, 0 degrees
+    RotationCW = 1, // Clock wise, 90 degrees
+    RotationUD = 2, // Upside down, 180 degrees
+    RotationCCW = 3 // Counter clock wise, 270 degrees
 };
 
 enum WaveForm

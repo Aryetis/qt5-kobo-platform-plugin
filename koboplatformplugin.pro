@@ -88,3 +88,30 @@ OBJECTS_DIR = build/ereader/obj
 MOC_DIR = build/ereader/moc
 RCC_DIR = build/ereader/rcc
 UI_DIR = build/ereader/ui
+
+# https://forum.qt.io/topic/150792/how-to-get-git-commit-id-during-build-and-display-it-as-version-information/8
+GIT_PATH=$$system(which git)
+!isEmpty(GIT_PATH) {
+    BUILD_VERSION=$$system($$GIT_PATH rev-parse HEAD)
+    BUILD_USER=$$system($$GIT_PATH config user.name)
+}
+isEmpty(BUILD_VERSION) {
+    message("Error: Compilation stopped. Git not found")
+    CONFIG += invalid_configuration
+}
+isEmpty(BUILD_USER) {
+    message("Error: Compilation stopped. Git user not found")
+    CONFIG += invalid_configuration
+}
+DEFINES += "GIT_COMMIT_HASH=\"\\\"$$BUILD_VERSION\\\"\""
+DEFINES += "GIT_USER=\"\\\"$$BUILD_USER\\\"\""
+
+DATE_PATH=$$system(which date)
+!isEmpty(DATE_PATH) {
+    COMPILATION_DATE=$$system($$DATE_PATH)
+}
+isEmpty(COMPILATION_DATE) {
+    message("Error: Compilation stopped. date not found")
+    CONFIG += invalid_configuration
+}
+DEFINES += "COMP_TIME=\"\\\"$$COMPILATION_DATE\\\"\""
