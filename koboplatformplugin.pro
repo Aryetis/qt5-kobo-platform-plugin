@@ -32,8 +32,12 @@ FBInkBuildEvent.name = building FBInk
 FBInkBuildEvent.CONFIG += no_link target_predeps
 QMAKE_EXTRA_COMPILERS += FBInkBuildEvent
 
-INCLUDEPATH += $$PWD/FBInk $$PWD/FBInk/libi2c-staged/include
-LIBS += -L$$PWD/FBInk/libi2c-staged/lib/ -l:libi2c.a
+# Old:
+# INCLUDEPATH += $$PWD/FBInk $$PWD/FBInk/libi2c-staged/include
+# LIBS += -L$$PWD/FBInk/libi2c-staged/lib/ -l:libi2c.a
+
+# New 2024 FBInk:
+INCLUDEPATH += $$PWD/FBInk
 
 # We always want release.
 # CONFIG(debug, debug|release) {

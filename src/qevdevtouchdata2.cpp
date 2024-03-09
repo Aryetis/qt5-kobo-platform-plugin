@@ -31,7 +31,7 @@ QPointF QEvdevTouchScreenData2::transformTouchPoint(const QPointF &p, bool up)
     // NOTE: The following was borrowed from my experiments with this in InkVT ;).
     // Deal with device-specific rotation quirks...
     // c.f., https://github.com/koreader/koreader/blob/master/frontend/device/kobo/device.lua
-    if (fbink_state->device_id == DEVICE_KOBO_TOUCH_AB && up)
+    if ((fbink_state->device_id == DEVICE_KOBO_TOUCH_B || fbink_state->device_id == DEVICE_KOBO_TOUCH_A) && up)
     {
         // The Touch A/B does something... weird.
         // The frame that reports a contact lift does the coordinates transform for us...
