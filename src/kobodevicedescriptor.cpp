@@ -118,6 +118,7 @@ KoboDeviceDescriptor KoboNova = {
     .device = KoboClaraHD,
     .mark = 7,
     .dpi = 300,
+    .hasReliableMxcWaitFor = true,
 };
 
 // Kobo Forma:
@@ -172,8 +173,6 @@ KoboDeviceDescriptor KoboCadmus = {
     .dpi = 300,
     .hasGSensor = true,
     .isSunxi = true,
-    .ntxDev = "/dev/input/by-path/platform-ntx_event0-event",
-    .touchDev = "/dev/input/by-path/platform-0-0010-event",
 };
 
 // Kobo Libra 2

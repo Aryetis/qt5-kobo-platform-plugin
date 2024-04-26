@@ -379,10 +379,12 @@ void KoboFbScreen::doManualRefresh(const QRect &region, bool forceMode, WFM_MODE
 
     if (rv == EXIT_SUCCESS && waitForRefresh) {
         if (koboDevice->hasReliableMxcWaitFor) {
+            if(debug) qDebug() << "Doing a probably good wait method";
             fbink_wait_for_complete(mFbFd, LAST_MARKER);
         }
         else {
-            usleep(1000);
+            if(debug) qDebug() << "Doing horrible wait method...";
+            usleep(500);
         }
     }
 }

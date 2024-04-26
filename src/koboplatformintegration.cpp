@@ -100,7 +100,6 @@ QPlatformServices *KoboPlatformIntegration::services() const
 
 void KoboPlatformIntegration::createInputHandlers()
 {
-    QString touchscreenDevice(koboDevice.touchDev);
     QRegularExpression touchDevRx("touchscreen_device=(.*)");
     QRegularExpression touchSwapXYRx("touchscreen_swap_xy=(.*)");
     QRegularExpression touchInvXRx("touchscreen_invert_x=(.*)");
@@ -137,9 +136,6 @@ void KoboPlatformIntegration::createInputHandlers()
             if (debug)
                 qDebug() << "Mouse support enabled";
             mouse = true;
-        }
-        if (arg.contains(touchDevRx, &match)) {
-            touchscreenDevice = match.captured(1);
         }
         if (arg.contains(touchSwapXYRx, &match) && match.captured(1).toInt() > 0)
         {
@@ -179,7 +175,7 @@ void KoboPlatformIntegration::createInputHandlers()
     if (useHWScreenLimits && touchRangeY == 0)
         touchRangeY = flipTouchscreenAxes ? koboDevice.width : koboDevice.height;
 
-    QString evdevTouchArgs(touchscreenDevice);
+    QString evdevTouchArgs = ""; // This is experimental, I yeeted out fixed paths
     if (koboDevice.touchscreenSettings.swapXY)
         evdevTouchArgs += ":swapxy";
     if (koboDevice.touchscreenSettings.invertX)

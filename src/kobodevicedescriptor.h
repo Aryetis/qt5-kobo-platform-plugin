@@ -63,11 +63,6 @@ struct KoboDeviceDescriptor
     bool hasReliableMxcWaitFor = true;
     // Sunxi devices require a completely different fb backend...
     bool isSunxi = false;
-
-    // Stable path to the NTX input device
-    QString ntxDev = "/dev/input/event0";
-    // Stable path to the Touch input device
-    QString touchDev = "/dev/input/event1";
 };
 
 KoboDeviceDescriptor determineDevice();
