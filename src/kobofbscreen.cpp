@@ -358,7 +358,6 @@ void KoboFbScreen::doManualRefresh(const QRect &region, bool forceMode, WFM_MODE
         fbink_cfg.wfm_mode = waveformMode;
     }
 
-
     if(flashingEnabled == true) {
         fbink_cfg.is_flashing = isFullRefresh;
     }
@@ -371,13 +370,15 @@ void KoboFbScreen::doManualRefresh(const QRect &region, bool forceMode, WFM_MODE
 // Even more logs, don't compile them at default
 #if true == false
 #warning "additionall debug values are added. This should not be enabled in default builds"
-    qDebug() << "fbink refresh exit value:" << rv;
-    qDebug() << "errno value:" << errno;
-    qDebug() << "waitForRefresh value is:" << waitForRefresh;
+    if(debug) {
+        qDebug() << "fbink refresh exit value:" << rv;
+        qDebug() << "errno value:" << errno;
+        qDebug() << "waitForRefresh value is:" << waitForRefresh;
+    }
 #endif
 
     if (rv != EXIT_SUCCESS && errno == EPERM) {
-        qDebug() << "QPA: Detected framebuffer freeze, attempting to fix ...";
+        if(debug) qDebug() << "QPA: Detected framebuffer freeze, attempting to fix ...";
         unsigned long arg = VESA_NO_BLANKING;
         if (ioctl(mFbFd, FBIOBLANK, arg) == EXIT_SUCCESS) {
             rv = fbink_refresh(mFbFd, region.top(), region.left(), region.width(), region.height(), &fbink_cfg);
