@@ -83,18 +83,11 @@ KoboFbScreen::KoboFbScreen(const QStringList &args, KoboDeviceDescriptor *koboDe
       fbink_state({0}),
       memmapInfo({0}),
       fbink_cfg({0}),
-      waitForRefresh(false),
       useHardwareDithering(false),
       useSoftwareDithering(true)
 {
 
-    // If it has no reliable mxc wait for, and the device has problems (like showing things like kobo clara) then this should be true too?
-    if(koboDevice->hasReliableMxcWaitFor == true) {
-        waitForRefresh = true;
-    }
-
     useHardwareDithering = false; // TODO: What even is this?
-
     setDefaultWaveform();
 }
 
@@ -310,8 +303,7 @@ void KoboFbScreen::clearScreen(bool waitForCompleted)
                    static_cast<unsigned short>(mGeometry.height())};
     fbink_cls(mFbFd, &fbink_cfg, &r, true);
 
-    if (waitForCompleted && koboDevice->hasReliableMxcWaitFor)
-        fbink_wait_for_complete(mFbFd, LAST_MARKER);
+    waitForRefresh(waitForCompleted);
 }
 
 void KoboFbScreen::enableDithering(bool softwareDithering, bool hardwareDithering)
@@ -373,7 +365,7 @@ void KoboFbScreen::doManualRefresh(const QRect &region, bool forceMode, WFM_MODE
     if(debug) {
         qDebug() << "fbink refresh exit value:" << rv;
         qDebug() << "errno value:" << errno;
-        qDebug() << "waitForRefresh value is:" << waitForRefresh;
+        // qDebug() << "waitForRefresh value is:" << waitForRefresh;
     }
 #endif
 
@@ -385,15 +377,8 @@ void KoboFbScreen::doManualRefresh(const QRect &region, bool forceMode, WFM_MODE
         }
     }
 
-    if (rv == EXIT_SUCCESS && waitForRefresh == true) {
-        if (koboDevice->hasReliableMxcWaitFor) {
-            if(debug) qDebug() << "Doing a probably good wait method";
-            fbink_wait_for_complete(mFbFd, LAST_MARKER);
-        }
-        else {
-            if(debug) qDebug() << "Doing horrible wait method...";
-            usleep(500);
-        }
+    if (rv == EXIT_SUCCESS) {
+        waitForRefresh();
     }
 }
 
@@ -483,9 +468,7 @@ void KoboFbScreen::mouseMoveChecker() {
             mBlitter->drawImage(previousPosition, cleanStopFragment);
             // We need full actually, and the default is small
             doManualRefresh(stopRect, true, this->waveFormPartial);
-            if (koboDevice->hasReliableMxcWaitFor) {
-                fbink_wait_for_complete(mFbFd, LAST_MARKER);
-            }
+            waitForRefresh(true);
             doManualRefresh(stopRect, true, this->waveFormPartial);
             /* Debug
             QImage tmp{"/cursor.png"};
@@ -569,9 +552,7 @@ void KoboFbScreen::mouseMoveChecker() {
                if (motionDebug) qDebug() << "Mouse stopped moving, returning to slow refreshes";
 
                // Make sure the cursor is visible
-               if (koboDevice->hasReliableMxcWaitFor) {
-                   fbink_wait_for_complete(mFbFd, LAST_MARKER);
-               }
+               waitForRefresh(true);
                mBlitter->setCompositionMode(QPainter::CompositionMode_Source);
                mBlitter->drawImage(mCursor->pos(), *standbyCursor);
                QRect cursorStandbyRect{mCursor->pos().x(), mCursor->pos().y(), standbyCursor->width(), standbyCursor->height()};
@@ -608,4 +589,17 @@ void KoboFbScreen::doSunxiPenRefresh()
     fbink_cfg.wfm_mode = pen_wfm;
 
     fbink_sunxi_toggle_ntx_pen_mode(mFbFd, true);
+}
+
+void KoboFbScreen::waitForRefresh(bool force) {
+    if (koboDevice->requiresWaitForCall == true || force == true) {
+        if (koboDevice->hasReliableMxcWaitFor) {
+            if(debug) qDebug() << "Doing a probably good wait method";
+            fbink_wait_for_complete(mFbFd, LAST_MARKER);
+        }
+        else {
+            if(debug) qDebug() << "Doing horrible wait method...";
+            usleep(500);
+        }
+    }
 }

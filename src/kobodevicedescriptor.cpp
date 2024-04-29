@@ -119,6 +119,7 @@ KoboDeviceDescriptor KoboNova = {
     .mark = 7,
     .dpi = 300,
     .hasReliableMxcWaitFor = true,
+    .requiresWaitForCall = true,
 };
 
 // Kobo Forma:

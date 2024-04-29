@@ -64,6 +64,8 @@ public:
 
     void doSunxiPenRefresh();
 
+    void waitForRefresh(bool force = false);
+
 private:
     void ditherRegion(const QRect &region);
 
@@ -89,7 +91,6 @@ private:
 
     FBInkConfig fbink_cfg;
 
-    bool waitForRefresh;
     bool useHardwareDithering;
     bool useSoftwareDithering;
 
@@ -120,7 +121,6 @@ private:
 
     bool flashingEnabled = true;
     bool nightMode = false;
-
 };
 
 #endif  // QKOBOFBSCREEN_H
