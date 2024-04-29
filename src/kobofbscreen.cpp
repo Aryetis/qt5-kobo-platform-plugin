@@ -88,12 +88,10 @@ KoboFbScreen::KoboFbScreen(const QStringList &args, KoboDeviceDescriptor *koboDe
       useSoftwareDithering(true)
 {
 
-    // This didn't worked anyway and this is a horrible implementation of it
-    /*
-    if(koboDevice->modelName == "nova") {
+    // If it has no reliable mxc wait for, and the device has problems (like showing things like kobo clara) then this should be true too?
+    if(koboDevice->hasReliableMxcWaitFor == true) {
         waitForRefresh = true;
     }
-    */
 
     useHardwareDithering = false; // TODO: What even is this?
 
@@ -369,6 +367,15 @@ void KoboFbScreen::doManualRefresh(const QRect &region, bool forceMode, WFM_MODE
     }
 
     int rv = fbink_refresh(mFbFd, region.top(), region.left(), region.width(), region.height(), &fbink_cfg);
+
+// Even more logs, don't compile them at default
+#if true == false
+#warning "additionall debug values are added. This should not be enabled in default builds"
+    qDebug() << "fbink refresh exit value:" << rv;
+    qDebug() << "errno value:" << errno;
+    qDebug() << "waitForRefresh value is:" << waitForRefresh;
+#endif
+
     if (rv != EXIT_SUCCESS && errno == EPERM) {
         qDebug() << "QPA: Detected framebuffer freeze, attempting to fix ...";
         unsigned long arg = VESA_NO_BLANKING;
@@ -377,7 +384,7 @@ void KoboFbScreen::doManualRefresh(const QRect &region, bool forceMode, WFM_MODE
         }
     }
 
-    if (rv == EXIT_SUCCESS && waitForRefresh) {
+    if (rv == EXIT_SUCCESS && waitForRefresh == true) {
         if (koboDevice->hasReliableMxcWaitFor) {
             if(debug) qDebug() << "Doing a probably good wait method";
             fbink_wait_for_complete(mFbFd, LAST_MARKER);
