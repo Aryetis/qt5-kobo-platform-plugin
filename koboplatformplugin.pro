@@ -26,7 +26,7 @@ FBInkBuildEvent.input = $$PWD/FBink/*.c $$PWD/FBink/*.h
 PHONY_DEPS = .
 FBInkBuildEvent.input = PHONY_DEPS
 FBInkBuildEvent.output = FBInk
-FBInkBuildEvent.clean_commands = make -C $$PWD/FBInk distclean
+FBInkBuildEvent.clean_commands = $(MAKE) -C $$PWD/FBInk distclean
 
 FBInkBuildEvent.name = building FBInk
 FBInkBuildEvent.CONFIG += no_link target_predeps
@@ -36,12 +36,12 @@ INCLUDEPATH += $$PWD/FBInk $$PWD/FBInk/libi2c-staged/include $$PWD/FBInk/libevde
 LIBS += -L$$PWD/FBInk/libi2c-staged/lib/ -l:libi2c.a
 
 CONFIG(debug, debug|release) {
-    FBInkBuildEvent.commands = CROSS_TC=$$CROSS_TC MINIMAL=1 DRAW=1 DEBUG=1 KOBO=true make -C $$PWD/FBInk pic
+    FBInkBuildEvent.commands = CROSS_TC=$$CROSS_TC MINIMAL=1 DRAW=1 DEBUG=1 KOBO=true $(MAKE) -C $$PWD/FBInk pic
     LIBS += -L$$PWD/FBInk/Debug -l:libfbink.a
 }
 
 CONFIG(release, debug|release) {
-FBInkBuildEvent.commands = CROSS_TC=$$CROSS_TC MINIMAL=1 DRAW=1 KOBO=true make -C $$PWD/FBInk pic
+    FBInkBuildEvent.commands = CROSS_TC=$$CROSS_TC MINIMAL=1 DRAW=1 KOBO=true $(MAKE) -C $$PWD/FBInk pic
     LIBS += -L$$PWD/FBInk/Release -l:libfbink.a
 }
 
