@@ -193,6 +193,16 @@ KoboDeviceDescriptor KoboGoldfinch = {
     .hasGSensor = true,
 };
 
+// Kobo Libra Colour
+KoboDeviceDescriptor KoboMonza = {
+    .device = KoboLibraColour,
+    .mark = 8,
+    .dpi = 300,
+    .isREAGL = true,
+    .hasGSensor = true,
+    .touchscreenSettings= {.swapXY = true, .invertX = false, .invertY = true},
+};
+
 static QString exec(const char *cmd)
 {
     std::array<char, 128> buffer;
@@ -333,6 +343,10 @@ KoboDeviceDescriptor determineDevice()
     else if (deviceName == "goldfinch")
     {
         device = KoboGoldfinch;
+    }
+    else if (deviceName == "monza")
+    {
+        device = KoboMonza;
     }
     else // Why is it the last in else only?...
     {

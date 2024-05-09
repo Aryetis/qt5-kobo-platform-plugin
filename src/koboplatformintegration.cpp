@@ -218,7 +218,7 @@ void KoboPlatformIntegration::createInputHandlers()
                 qDebug() << "Created instance of QLibInputHandler";
         }
 #else
-#error libinput libraries are missing - If you do not care, want to debug something unrelated comment this error, but if you want to ship a InkBox OS binary, you need to make this work
+#warning libinput libraries are missing - If you do not care, want to debug something unrelated comment this error, but if you want to ship a InkBox OS binary, you need to make this work
 #endif
         if (debug and !libinputBool)
             qDebug() << "Input backend 'libinput' not found";

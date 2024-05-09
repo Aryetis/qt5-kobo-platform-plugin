@@ -1,6 +1,12 @@
 TARGET = kobo
 
+# Used to set a different QTDIR
+include(koboplatformplugin.pri)
+isEmpty(CUSTOM_QTDIR) {
 QTDIR = /mnt/onboard/.adds/qt-linux-5.15-kobo
+} else {
+QTDIR = $${CUSTOM_QTDIR}
+}
 CROSS_TC = arm-kobo-linux-gnueabihf
 
 TEMPLATE = lib
@@ -26,27 +32,21 @@ FBInkBuildEvent.input = $$PWD/FBink/*.c $$PWD/FBink/*.h
 PHONY_DEPS = .
 FBInkBuildEvent.input = PHONY_DEPS
 FBInkBuildEvent.output = FBInk
-FBInkBuildEvent.clean_commands = make -C $$PWD/FBInk clean
+FBInkBuildEvent.clean_commands = ${MAKE} -C $$PWD/FBInk clean
 
 FBInkBuildEvent.name = building FBInk
 FBInkBuildEvent.CONFIG += no_link target_predeps
 QMAKE_EXTRA_COMPILERS += FBInkBuildEvent
 
-# Old:
-# INCLUDEPATH += $$PWD/FBInk $$PWD/FBInk/libi2c-staged/include
-# LIBS += -L$$PWD/FBInk/libi2c-staged/lib/ -l:libi2c.a
-
-# New 2024 FBInk:
 INCLUDEPATH += $$PWD/FBInk
 
-# We always want release.
-# CONFIG(debug, debug|release) {
-#     FBInkBuildEvent.commands = CROSS_TC=$$CROSS_TC MINIMAL=1 DRAW=1 DEBUG=1 KOBO=true make -C $$PWD/FBInk pic
-#     LIBS += -L$$PWD/FBInk/Debug -l:libfbink.a
-# }
+CONFIG(debug, debug|release) {
+    FBInkBuildEvent.commands = CROSS_TC=$$CROSS_TC MINIMAL=1 DRAW=1 DEBUG=1 KOBO=true ${MAKE} -C $$PWD/FBInk pic
+    LIBS += -L$$PWD/FBInk/Debug -l:libfbink.a
+}
 
 CONFIG(release, debug|release) {
-FBInkBuildEvent.commands = CROSS_TC=$$CROSS_TC MINIMAL=1 DRAW=1 KOBO=true make -C $$PWD/FBInk pic
+FBInkBuildEvent.commands = CROSS_TC=$$CROSS_TC MINIMAL=1 DRAW=1 KOBO=true ${MAKE} -C $$PWD/FBInk pic
     LIBS += -L$$PWD/FBInk/Release -l:libfbink.a
 }
 

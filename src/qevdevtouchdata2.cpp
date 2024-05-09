@@ -45,6 +45,11 @@ QPointF QEvdevTouchScreenData2::transformTouchPoint(const QPointF &p, bool up)
         // !touch_mirrored_x
         canonical_pos = p.transposed();
     }
+    else if (fbink_state->device_id == DEVICE_KOBO_LIBRA_COLOUR)
+    {
+        canonical_pos = p.transposed();
+        canonical_pos.setY((int32_t)fbink_state->screen_height - canonical_pos.y());
+    }
     else
     {
         // touch_switch_xy && touch_mirrored_x

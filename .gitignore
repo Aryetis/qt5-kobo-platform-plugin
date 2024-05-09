@@ -69,3 +69,4 @@ compile_commands.json
 libkobo.so
 FBink
 build/
+koboplatformplugin.pri
