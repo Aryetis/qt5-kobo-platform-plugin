@@ -53,7 +53,8 @@ Q_DECLARE_LOGGING_CATEGORY(qLcEvdevTouch)
 Q_DECLARE_LOGGING_CATEGORY(qLcEvdevTouch2)
 Q_DECLARE_LOGGING_CATEGORY(qLcEvdevTouch3)
 
-QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specification, QObject *parent, KoboFbScreen *koboFbScreen)
+QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specification, QObject *parent,
+                                       KoboFbScreen *koboFbScreen)
     : QObject(parent), koboFbScreen(koboFbScreen)
 {
     Q_UNUSED(key);
@@ -74,22 +75,27 @@ QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specif
 
     auto args = spec.splitRef(QLatin1Char(':'));
 
-    for (const QStringRef &arg : qAsConst(args))
+    qCDebug(qLcEvdevTouch, "evdevtouch: Using device discovery");
+    if (auto deviceDiscovery = QDeviceDiscovery::create(
+            QDeviceDiscovery::Device_Touchpad | QDeviceDiscovery::Device_Touchscreen, this))
     {
-        if (arg.startsWith(QLatin1String("/dev/")))
-        {
-            // if device is specified try to use it
-            devicePaths.append(arg.toString());
-        }
-        else
-        {
-            if (!spec.isEmpty())
-                spec += QLatin1Char(':');
-            // build new specification without /dev/ elements
-            spec += arg;
-        }
-    }
+        const QStringList devices = deviceDiscovery->scanConnectedDevices();
 
+        // Periodic scanning for reasons
+        // discovery = deviceDiscovery;
+        // QTimer* timer = new QTimer(this);
+        // timer->setInterval(1000);
+        // connect(timer, &QTimer::timeout, this, &QEvdevTouchManager::periodicScan);
+        // timer->start();
+
+        for (const QString &device : devices) {
+            addDevice(device);
+        }
+
+        connect(deviceDiscovery, &QDeviceDiscovery::deviceDetected, this, &QEvdevTouchManager::addDevice);
+        connect(deviceDiscovery, &QDeviceDiscovery::deviceRemoved, this,
+                &QEvdevTouchManager::removeDevice);
+    }
 
     for (const QString &device : qAsConst(devicePaths))
         addDevice(device);
@@ -110,7 +116,7 @@ void QEvdevTouchManager::addDevice(const QString &deviceNode)
     }
     else
     {
-        qWarning("evdevtouch: Failed to open touch device %ls", qUtf16Printable(deviceNode));
+        qDebug("evdevtouch: Failed to open touch device %ls", qUtf16Printable(deviceNode));
     }
 }
 
@@ -138,7 +144,7 @@ void QEvdevTouchManager::updateInputDeviceCount()
     }
 
     qCDebug(qLcEvdevTouch,
-            "evdevtouch: Updating QInputDeviceManager device count: %d touch devices, %d pending handler(s)",
+            "evdevtouch: Updating QInputDeviceManager device count: %d touch devices, %zu pending handler(s)",
             registeredTouchDevices, m_activeDevices.size() - registeredTouchDevices);
 
         QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())

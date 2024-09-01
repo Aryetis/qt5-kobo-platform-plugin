@@ -11,9 +11,7 @@ KoboDeviceDescriptor KoboTrilogyAB = {
     .device = KoboTouchAB,
     .mark = 3,
     .dpi = 200,
-    .hasKeys = true,
-    .touchscreenSettings{.swapXY = false, .hasMultitouch = false},
-    .frontlightSettings = {.hasFrontLight = false},
+    .touchscreenSettings = {.swapXY = false, .hasMultitouch = false},
 };
 
 // Kobo Touch C:
@@ -21,9 +19,7 @@ KoboDeviceDescriptor KoboTrilogyC = {
     .device = KoboTouchC,
     .mark = 4,
     .dpi = 200,
-    .hasKeys = true,
-    .touchscreenSettings{.swapXY = false, .hasMultitouch = false},
-    .frontlightSettings = {.hasFrontLight = false},
+    .touchscreenSettings= {.swapXY = false, .hasMultitouch = false},
 };
 
 // Kobo Mini:
@@ -31,8 +27,7 @@ KoboDeviceDescriptor KoboPixie = {
     .device = KoboMini,
     .mark = 4,
     .dpi = 200,
-    .touchscreenSettings{.hasMultitouch = false},
-    .frontlightSettings = {.hasFrontLight = false},
+    .touchscreenSettings= {.hasMultitouch = false},
 };
 
 // Kobo Glo:
@@ -40,7 +35,7 @@ KoboDeviceDescriptor KoboKraken = {
     .device = KoboGlo,
     .mark = 4,
     .dpi = 212,
-    .touchscreenSettings{.hasMultitouch = false},
+    .touchscreenSettings= {.hasMultitouch = false},
 };
 
 // Kobo Glo HD:
@@ -55,8 +50,6 @@ KoboDeviceDescriptor KoboPika = {
     .device = KoboTouch2,
     .mark = 6,
     .dpi = 167,
-    .frontlightSettings = {.hasFrontLight = false},
-
 };
 
 // Kobo Aura:
@@ -73,7 +66,7 @@ KoboDeviceDescriptor KoboDragon = {
     .device = KoboAuraHD,
     .mark = 4,
     .dpi = 265,
-    .touchscreenSettings{.hasMultitouch = false},
+    .touchscreenSettings= {.hasMultitouch = false},
 };
 
 // Kobo Aura H2O:
@@ -89,13 +82,6 @@ KoboDeviceDescriptor KoboSnow = {
     .mark = 6,
     .dpi = 265,
     .touchscreenSettings = {.invertX = false},
-    .frontlightSettings =
-        {
-            .hasNaturalLight = true,
-            .frontlightDevWhite = "/sys/class/backlight/lm3630a_ledb",
-            .frontlightDevRed = "/sys/class/backlight/lm3630a_led",
-            .frontlightDevGreen = "/sys/class/backlight/lm3630a_leda",
-        },
 };
 
 // Kobo Aura H2O2, Rev2:
@@ -104,12 +90,6 @@ KoboDeviceDescriptor KoboSnowRev2 = {
     .device = KoboAuraH2O2_v2,
     .mark = 7,
     .dpi = 265,
-    .frontlightSettings =
-        {
-            .hasNaturalLight = true,
-            .frontlightDevWhite = "/sys/class/backlight/lm3630a_ledb",
-            .frontlightDevRed = "/sys/class/backlight/lm3630a_leda",
-        },
 };
 
 // Kobo Aura One:
@@ -117,10 +97,6 @@ KoboDeviceDescriptor KoboDaylight = {
     .device = KoboAuraOne,
     .mark = 6,
     .dpi = 300,
-    .frontlightSettings = {.hasNaturalLight = true,
-                           .frontlightDevWhite = "/sys/class/backlight/lm3630a_led1b",
-                           .frontlightDevRed = "/sys/class/backlight/lm3630a_led1a",
-                           .frontlightDevGreen = "/sys/class/backlight/lm3630a_ledb"},
 };
 
 // Kobo Aura second edition:
@@ -142,17 +118,8 @@ KoboDeviceDescriptor KoboNova = {
     .device = KoboClaraHD,
     .mark = 7,
     .dpi = 300,
-    .canToggleChargingLED = true,
-    .frontlightSettings =
-        {
-            .hasNaturalLight = true,
-            .hasNaturalLightMixer = true,
-            .naturalLightInverted = true,
-            .naturalLightMin = 0,
-            .naturalLightMax = 10,
-            .frontlightDevWhite = "/sys/class/backlight/mxc_msp430.0/brightness",
-            .frontlightDevMixer = "/sys/class/backlight/lm3630a_led/color",
-        },
+    .hasReliableMxcWaitFor = true,
+    .requiresWaitForCall = true,
 };
 
 // Kobo Forma:
@@ -168,21 +135,6 @@ KoboDeviceDescriptor KoboFrost = {
     .device = KoboForma,
     .mark = 7,
     .dpi = 300,
-    .hasKeys = true,
-    .canToggleChargingLED = true,
-    .hasGSensor = true,
-    .frontlightSettings =
-        {
-            .hasNaturalLight = true,
-            .hasNaturalLightMixer = true,
-            // Warmth goes from 0 to 10 on the .device's side (our own internal scale is still normalized
-            // to [0...100]) NOTE: Those three extra keys are *MANDATORY* if .frontlightDevMixer is set!
-            .naturalLightInverted = true,
-            .naturalLightMin = 0,
-            .naturalLightMax = 10,
-            .frontlightDevWhite = "/sys/class/backlight/mxc_msp430.0/brightness",
-            .frontlightDevMixer = "/sys/class/backlight/tlc5947_bl/color",
-        },
 };
 
 // Kobo Libra:
@@ -191,19 +143,6 @@ KoboDeviceDescriptor KoboStorm = {
     .device = KoboLibraH2O,
     .mark = 7,
     .dpi = 300,
-    .hasKeys = true,
-    .canToggleChargingLED = true,
-    .hasGSensor = true,
-    .frontlightSettings =
-        {
-            .hasNaturalLight = true,
-            .hasNaturalLightMixer = true,
-            .naturalLightInverted = true,
-            .naturalLightMin = 0,
-            .naturalLightMax = 10,
-            .frontlightDevWhite = "/sys/class/backlight/mxc_msp430.0/brightness",
-            .frontlightDevMixer = "/sys/class/backlight/lm3630a_led/color",
-        },
     // NOTE: The Libra apparently suffers from a mysterious issue where completely innocuous
     // WAIT_FOR_UPDATE_COMPLETE ioctls
     //       will mysteriously fail with a timeout (5s)...
@@ -218,7 +157,6 @@ KoboDeviceDescriptor KoboLuna = {
     .device = KoboNia,
     .mark = 7,
     .dpi = 212,
-    .canToggleChargingLED = true,
 };
 
 // Kobo Elipsa
@@ -226,12 +164,43 @@ KoboDeviceDescriptor KoboEuropa = {
     .device = KoboElipsa,
     .mark = 8,
     .dpi = 227,
-    .canToggleChargingLED = true,
+    .isSunxi = true,
+};
+
+// Kobo Sage
+KoboDeviceDescriptor KoboCadmus = {
+    .device = KoboSage,
+    .mark = 8,
+    .dpi = 300,
     .hasGSensor = true,
     .isSunxi = true,
-    .batterySysfs = "/sys/class/power_supply/battery",
-    .ntxDev = "/dev/input/by-path/platform-ntx_event0-event",
-    .touchDev = "/dev/input/by-path/platform-0-0010-event",
+};
+
+// Kobo Libra 2
+KoboDeviceDescriptor KoboIo = {
+    .device = KoboLibra2,
+    .mark = 7,
+    .dpi = 300,
+    .hasGSensor = true,
+    .touchscreenSettings{.invertX = false},
+};
+
+// Kobo Clara 2E
+KoboDeviceDescriptor KoboGoldfinch = {
+    .device = KoboClara2E,
+    .mark = 7,
+    .dpi = 300,
+    .hasGSensor = true,
+};
+
+// Kobo Libra Colour
+KoboDeviceDescriptor KoboMonza = {
+    .device = KoboLibraColour,
+    .mark = 8,
+    .dpi = 300,
+    .isREAGL = true,
+    .hasGSensor = true,
+    .touchscreenSettings= {.swapXY = true, .invertX = false, .invertY = true},
 };
 
 // Kobo Sage
@@ -345,7 +314,13 @@ static QSizeF determinePhysicalSize(const fb_var_screeninfo &vinfo, const QSize 
 
 KoboDeviceDescriptor determineDevice()
 {
-    auto deviceName = exec("/bin/kobo_config.sh 2>/dev/null");
+    QString deviceName;
+    if(QFile::exists("/bin/kobo_config.sh")) {
+        deviceName = exec("/bin/kobo_config.sh 2>/dev/null");
+    }
+    else {
+        deviceName = std::getenv("DEVICE_CODENAME");
+    }
     auto modelNumberStr = exec("cut -f 6 -d ',' /mnt/onboard/.kobo/version | sed -e 's/^[0-]*//'");
     int modelNumber = modelNumberStr.toInt();
 
@@ -435,6 +410,10 @@ KoboDeviceDescriptor determineDevice()
     {
         device = KoboGoldfinch;
     }
+    else if (deviceName == "monza")
+    {
+        device = KoboMonza;
+    }
     else
     {
         device = KoboTrilogyC;
@@ -445,8 +424,8 @@ KoboDeviceDescriptor determineDevice()
         fbDevice = QLatin1String("/dev/graphics/fb0");
     if (!QFile::exists(fbDevice))
     {
-        qWarning("Unable to figure out framebuffer device. Specify it manually.");
-        //            return false;
+        qDebug("Unable to figure out framebuffer device. Specify it manually.");
+        // return false;
     }
 
     int mFbFd = -1;
@@ -463,15 +442,15 @@ KoboDeviceDescriptor determineDevice()
     // Open the device
     if (mFbFd == -1)
     {
-        qErrnoWarning(errno, "Failed to open framebuffer %s", qPrintable(fbDevice));
-        //            return false;
+        qDebug("Failed to open framebuffer %s", qPrintable(fbDevice));
+        // return false;
     }
 
     fb_var_screeninfo vinfo;
 
     if (ioctl(mFbFd, FBIOGET_VSCREENINFO, &vinfo))
     {
-        qErrnoWarning(errno, "Error reading variable information");
+        qDebug("Error reading variable information");
     }
 
     QRect geometry = determineGeometry(vinfo);

@@ -1,6 +1,12 @@
 TARGET = kobo
 
-QTDIR = /mnt/onboard/.adds/qt-linux-5.15-kde-kobo
+# Used to set a different QTDIR
+include(koboplatformplugin.pri)
+isEmpty(CUSTOM_QTDIR) {
+QTDIR = /mnt/onboard/.adds/qt-linux-5.15-kobo
+} else {
+QTDIR = $${CUSTOM_QTDIR}
+}
 CROSS_TC = arm-kobo-linux-gnueabihf
 
 TEMPLATE = lib
@@ -32,8 +38,7 @@ FBInkBuildEvent.name = building FBInk
 FBInkBuildEvent.CONFIG += no_link target_predeps
 QMAKE_EXTRA_COMPILERS += FBInkBuildEvent
 
-INCLUDEPATH += $$PWD/FBInk $$PWD/FBInk/libi2c-staged/include $$PWD/FBInk/libevdev-staged/include/libevdev-1.0
-LIBS += -L$$PWD/FBInk/libi2c-staged/lib/ -l:libi2c.a
+INCLUDEPATH += $$PWD/FBInk
 
 CONFIG(debug, debug|release) {
     FBInkBuildEvent.commands = CROSS_TC=$$CROSS_TC MINIMAL=1 DRAW=1 DEBUG=1 KOBO=true $(MAKE) -C $$PWD/FBInk pic
@@ -45,15 +50,11 @@ CONFIG(release, debug|release) {
     LIBS += -L$$PWD/FBInk/Release -l:libfbink.a
 }
 
-
 SOURCES = src/main.cpp \
           src/dither.cpp \
-          src/kobobuttonintegration.cpp \
           src/kobodevicedescriptor.cpp \
           src/kobofbscreen.cpp \
-          src/koboplatformadditions.cpp \
           src/koboplatformintegration.cpp \
-          src/kobowifimanager.cpp \
           src/qevdevtouchdata.cpp \
           src/qevdevtouchdata2.cpp \
           src/qevdevtouchhandlerthread.cpp \
@@ -63,13 +64,10 @@ SOURCES = src/main.cpp \
 HEADERS = \
           src/dither.h \
           src/einkenums.h \
-          src/kobobuttonintegration.h \
           src/kobodevicedescriptor.h \
           src/kobofbscreen.h \
-          src/koboplatformadditions.h \
           src/koboplatformfunctions.h \
           src/koboplatformintegration.h \
-          src/kobowifimanager.h \
           src/qevdevtouchdata.h \
           src/qevdevtouchdata2.h \
           src/qevdevtouchfilter_p.h \
@@ -87,5 +85,37 @@ DISTFILES += \
     koboplatformplugin.json
 
 RESOURCES += \
-    Resources.qrc
+    resources.qrc
 
+DESTDIR = build/ereader
+OBJECTS_DIR = build/ereader/obj
+MOC_DIR = build/ereader/moc
+RCC_DIR = build/ereader/rcc
+UI_DIR = build/ereader/ui
+
+# https://forum.qt.io/topic/150792/how-to-get-git-commit-id-during-build-and-display-it-as-version-information/8
+GIT_PATH=$$system(which git)
+!isEmpty(GIT_PATH) {
+    BUILD_VERSION=$$system($$GIT_PATH rev-parse HEAD)
+    BUILD_USER=$$system($$GIT_PATH config user.name)
+}
+isEmpty(BUILD_VERSION) {
+    message("Error: Compilation stopped. Git not found")
+    CONFIG += invalid_configuration
+}
+isEmpty(BUILD_USER) {
+    message("Error: Compilation stopped. Git user not found")
+    CONFIG += invalid_configuration
+}
+DEFINES += "GIT_COMMIT_HASH=\"\\\"$$BUILD_VERSION\\\"\""
+DEFINES += "GIT_USER=\"\\\"$$BUILD_USER\\\"\""
+
+DATE_PATH=$$system(which date)
+!isEmpty(DATE_PATH) {
+    COMPILATION_DATE=$$system($$DATE_PATH)
+}
+isEmpty(COMPILATION_DATE) {
+    message("Error: Compilation stopped. date not found")
+    CONFIG += invalid_configuration
+}
+DEFINES += "COMP_TIME=\"\\\"$$COMPILATION_DATE\\\"\""

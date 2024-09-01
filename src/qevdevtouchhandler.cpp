@@ -75,7 +75,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
     qCDebug(qLcEvdevTouch2) << "spec: " <<spec;
 
     const QStringList args = spec.split(QLatin1Char(':'));
-    bool experimentaltochdhandler = false;
+    bool experimentaltouchdhandler = false;
     bool swapxy = false;
     bool invertx = false;
     bool inverty = false;
@@ -149,7 +149,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
         }
         else if (args.at(i).toLower() == QLatin1String("experimentaltouchhandler"))
         {
-            experimentaltochdhandler = true;
+            experimentaltouchdhandler = true;
         }
     }
 
@@ -164,12 +164,12 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
     }
     else
     {
-        qErrnoWarning("evdevtouch: Cannot open input device %ls", qUtf16Printable(device));
+        qDebug("evdevtouch: Cannot open input device %ls", qUtf16Printable(device));
         return;
     }
 
 
-    if(!experimentaltochdhandler)
+    if(!experimentaltouchdhandler)
         d = new QEvdevTouchScreenData(this, args);
     else
         d = new QEvdevTouchScreenData2(this, args, koboFbScreen);
@@ -219,7 +219,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
     }
 
     if (!has_x_range || !has_y_range)
-        qWarning("evdevtouch: %ls: Invalid ABS limits, behavior unspecified", qUtf16Printable(device));
+        qDebug("evdevtouch: %ls: Invalid ABS limits, behavior unspecified", qUtf16Printable(device));
 
     if (ioctl(m_fd, EVIOCGABS(ABS_PRESSURE), &absInfo) >= 0)
     {
@@ -251,7 +251,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
     if (grabSuccess)
         ioctl(m_fd, EVIOCGRAB, (void *)0);
     else
-        qWarning("evdevtouch: The device is grabbed by another process. No events will be read.");
+        qDebug("evdevtouch: The device is grabbed by another process. No events will be read.");
 
     registerTouchDevice();
 }
@@ -302,14 +302,14 @@ void QEvdevTouchScreenHandler::readData()
 err:
     if (!events)
     {
-        qWarning("evdevtouch: Got EOF from input device");
+        qDebug("evdevtouch: Got EOF from input device");
         return;
     }
     else if (events < 0)
     {
         if (errno != EINTR && errno != EAGAIN)
         {
-            qErrnoWarning("evdevtouch: Could not read from input device");
+            qDebug("evdevtouch: Could not read from input device");
             if (errno == ENODEV)
             {  // device got disconnected -> stop reading
                 delete m_notify;

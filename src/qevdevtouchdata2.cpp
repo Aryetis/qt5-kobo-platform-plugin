@@ -31,25 +31,20 @@ QPointF QEvdevTouchScreenData2::transformTouchPoint(const QPointF &p, bool up)
     // NOTE: The following was borrowed from my experiments with this in InkVT ;).
     // Deal with device-specific rotation quirks...
     // c.f., https://github.com/koreader/koreader/blob/master/frontend/device/kobo/device.lua
-    if ((fbink_state->device_id == DEVICE_KOBO_TOUCH_A || fbink_state->device_id == DEVICE_KOBO_TOUCH_B) && up) // TODO NOW test this !
+    if (fbink_state->device_id == DEVICE_KOBO_TOUCH_B && up)
     {
-        // The Touch A/B does something... weird.
+        // The Touch B does something... weird.
         // The frame that reports a contact lift does the coordinates transform for us...
         // That makes this a NOP for this frame only...
         canonical_pos = p;
     }
-    else if (fbink_state->device_id == DEVICE_KOBO_AURA_H2O_2 ||
-             fbink_state->device_id == DEVICE_KOBO_LIBRA_2)
-    {
-        // Aura H2O²r1 & Libra 2
-        // !touch_mirrored_x
-        canonical_pos = p.transposed();
-    }
     else
     {
-        // touch_switch_xy && touch_mirrored_x
-        canonical_pos.setX(dim_swap - p.y());
-        canonical_pos.setY(p.x());
+	canonical_pos = (fbink_state->touch_swap_axes) ? p.transposed(): p;
+        if (fbink_state->touch_mirror_x)
+            canonical_pos.setX((int32_t)fbink_state->screen_width - canonical_pos.x());
+        if (fbink_state->touch_mirror_y)
+            canonical_pos.setY((int32_t)fbink_state->screen_height - canonical_pos.y());
     }
 
     qCDebug(qLcEvdevTouch3) << "canonical_pos" << canonical_pos;

@@ -1,4 +1,3 @@
-
 #include "koboplatformintegration.h"
 
 #include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
@@ -7,8 +6,18 @@
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtServiceSupport/private/qgenericunixservices_p.h>
-#include <qevdevtouchmanager_p.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
+
+#if QT_CONFIG(libinput)
+#include <QtInputSupport/private/qlibinputhandler_p.h>
+#endif
+
+#if QT_CONFIG(evdev)
+#include <QtInputSupport/private/qevdevkeyboardmanager_p.h>
+#include <QtInputSupport/private/qevdevmousemanager_p.h>
+#endif
+
+#include "qevdevtouchmanager_p.h"
 
 KoboPlatformIntegration::KoboPlatformIntegration(const QStringList &paramList)
     : m_paramList(paramList),
@@ -16,9 +25,6 @@ KoboPlatformIntegration::KoboPlatformIntegration(const QStringList &paramList)
       m_inputContext(nullptr),
       m_fontDb(new QGenericUnixFontDatabase),
       m_services(new QGenericUnixServices),
-      m_kbdMgr(nullptr),
-      koboKeyboard(nullptr),
-      koboAdditions(nullptr),
       debug(false)
 {
     koboDevice = determineDevice();
@@ -37,13 +43,14 @@ void KoboPlatformIntegration::initialize()
     if (m_primaryScreen->initialize())
         QWindowSystemInterface::handleScreenAdded(m_primaryScreen);
     else
-        qWarning("kobofb: Failed to initialize screen");
+        qDebug("kobofb: Failed to initialize screen");
 
     m_inputContext = QPlatformInputContextFactory::create();
 
     createInputHandlers();
 
-    qWarning("kobofb: Finished initialization.");
+    qDebug("Platform plugin: Finished initialization.");
+    qDebug() << "git hash commit:" << GIT_COMMIT_HASH << "git user:" << GIT_USER << "compilation time:" << COMP_TIME;
 }
 
 bool KoboPlatformIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -93,7 +100,6 @@ QPlatformServices *KoboPlatformIntegration::services() const
 
 void KoboPlatformIntegration::createInputHandlers()
 {
-    QString touchscreenDevice(koboDevice.touchDev);
     QRegularExpression touchDevRx("touchscreen_device=(.*)");
     QRegularExpression touchSwapXYRx("touchscreen_swap_xy=(.*)");
     QRegularExpression touchInvXRx("touchscreen_invert_x=(.*)");
@@ -107,17 +113,30 @@ void KoboPlatformIntegration::createInputHandlers()
     int touchRangeX = 0;
     int touchRangeY = 0;
     bool experimentaltouchhandler = false;
+    bool keyboard = false;
+    bool mouse = false;
 
     auto screenrot = m_primaryScreen->getScreenRotation();
 
     for (const QString &arg : qAsConst(m_paramList))
     {
-        if (arg.contains("debug"))
+        if (arg.contains("debug")) {
             debug = true;
-
+        }
         QRegularExpressionMatch match;
-        if (arg.contains(touchDevRx, &match))
-            touchscreenDevice = match.captured(1);
+        // Those debug messages will not be seen if 'debug' is the latest argument
+        if (arg.startsWith("keyboard"))
+        {
+            if (debug)
+                qDebug() << "Keyboard support enabled";
+            keyboard = true;
+        }
+        if (arg.startsWith("mouse"))
+        {
+            if (debug)
+                qDebug() << "Mouse support enabled";
+            mouse = true;
+        }
         if (arg.contains(touchSwapXYRx, &match) && match.captured(1).toInt() > 0)
         {
             koboDevice.touchscreenSettings.swapXY = true;
@@ -142,7 +161,7 @@ void KoboPlatformIntegration::createInputHandlers()
         {
             manualRangeFlip = true;
         }
-        if(arg.contains("experimentaltouchhandler"))
+        if (arg.contains("experimentaltouchhandler"))
         {
             experimentaltouchhandler = true;
         }
@@ -156,7 +175,7 @@ void KoboPlatformIntegration::createInputHandlers()
     if (useHWScreenLimits && touchRangeY == 0)
         touchRangeY = flipTouchscreenAxes ? koboDevice.width : koboDevice.height;
 
-    QString evdevTouchArgs(touchscreenDevice);
+    QString evdevTouchArgs = ""; // This is experimental, I yeeted out fixed paths
     if (koboDevice.touchscreenSettings.swapXY)
         evdevTouchArgs += ":swapxy";
     if (koboDevice.touchscreenSettings.invertX)
@@ -167,7 +186,7 @@ void KoboPlatformIntegration::createInputHandlers()
         evdevTouchArgs += QString(":hw_range_x_max=%1").arg(touchRangeX);
     if (touchRangeY > 0)
         evdevTouchArgs += QString(":hw_range_y_max=%1").arg(touchRangeY);
-    if(experimentaltouchhandler)
+    if (experimentaltouchhandler)
         evdevTouchArgs += ":experimentaltouchhandler";
 
     evdevTouchArgs += QString(":screenwidth=%1").arg(koboDevice.width);
@@ -176,13 +195,70 @@ void KoboPlatformIntegration::createInputHandlers()
     evdevTouchArgs += QString(":screenrotation=%1").arg(screenrot * 90);
 
     new QEvdevTouchManager("EvdevTouch", evdevTouchArgs, this, m_primaryScreen);
-
-    koboKeyboard = new KoboButtonIntegration(this, koboDevice.ntxDev, debug);
-    koboAdditions = new KoboPlatformAdditions(this, koboDevice);
-
     if (debug)
         qDebug() << "device:" << koboDevice.modelName << koboDevice.modelNumber << '\n'
-                 << "screen:" << koboDevice.width << koboDevice.height << "dpi:" << koboDevice.dpi;
+                 << "screen:" << koboDevice.width << koboDevice.height << "dpi:" << koboDevice.dpi
+                 << "rotation:" << screenrot;
+
+    // A bit of inspiration: https://github.com/librereader/qpa-einkfb
+    if (keyboard == true or mouse == true)
+    {
+        bool libinputBool = false;
+        bool evdevBool = false;  // Probably not needed
+
+#if QT_CONFIG(libinput)
+        libinputBool = true;
+        if (debug)
+            qDebug() << "Using libinput as input backend for peripherals";
+
+        if (keyboard or mouse)
+        {
+            new QLibInputHandler(QLatin1String("libinput"), QString());
+            if (debug)
+                qDebug() << "Created instance of QLibInputHandler";
+        }
+#else
+#warning libinput libraries are missing - If you do not care, want to debug something unrelated comment this error, but if you want to ship a InkBox OS binary, you need to make this work
+#endif
+        if (debug and !libinputBool)
+            qDebug() << "Input backend 'libinput' not found";
+
+#if QT_CONFIG(evdev)
+        if (!libinputBool)
+        {
+            evdevBool = true;
+            if (debug)
+                qDebug() << "Additional input libraries aren't available; using evdev";
+            if (keyboard)
+            {
+                new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
+                if (debug)
+                    qDebug() << "Created instance of QEvdevKeyboardManager";
+            }
+            if (mouse)
+            {
+                new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
+                if (debug)
+                    qDebug() << "Created instance of QEvdevMouseManager";
+            }
+        }
+#endif
+
+        if (mouse and (evdevBool or libinputBool))
+        {
+            // This is actually needed to make the cursor appear... Very important
+            QMouseEvent *event =
+                new QMouseEvent(QEvent::MouseMove, QPoint(koboDevice.width / 2, koboDevice.height / 2),
+                                Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+            m_primaryScreen->mCursor->pointerEvent(*event);
+        }
+
+        if ((libinputBool or evdevBool) and debug)
+        {
+            qDebug() << "WARNING: Additional command line arguments may be required for input. Please read "
+                        "the documentation.";
+        }
+    }
 }
 
 QPlatformNativeInterface *KoboPlatformIntegration::nativeInterface() const
@@ -197,14 +273,18 @@ KoboDeviceDescriptor *KoboPlatformIntegration::deviceDescriptor()
 
 QFunctionPointer KoboPlatformIntegration::platformFunction(const QByteArray &function) const
 {
-    if (function == KoboPlatformFunctions::setFrontlightLevelIdentifier())
-        return QFunctionPointer(setFrontlightLevelStatic);
-    else if (function == KoboPlatformFunctions::getBatteryLevelIdentifier())
-        return QFunctionPointer(getBatteryLevelStatic);
-    else if (function == KoboPlatformFunctions::isBatteryChargingIdentifier())
-        return QFunctionPointer(isBatteryChargingStatic);
-    else if (function == KoboPlatformFunctions::setFullScreenRefreshModeIdentifier())
+    if (function == KoboPlatformFunctions::setFullScreenRefreshModeIdentifier())
         return QFunctionPointer(setFullScreenRefreshModeStatic);
+    else if (function == KoboPlatformFunctions::setPartialScreenRefreshModeIdentifier())
+        return QFunctionPointer(setPartialScreenRefreshModeStatic);
+    else if (function == KoboPlatformFunctions::setFastScreenRefreshModeIdentifier())
+        return QFunctionPointer(setFastScreenRefreshModeStatic);
+    else if (function == KoboPlatformFunctions::setDefaultWaveformIdentifier())
+        return QFunctionPointer(setDefaultWaveformStatic);
+    else if (function == KoboPlatformFunctions::setFlashingIdentifier())
+        return QFunctionPointer(setFlashingStatic);
+    else if (function == KoboPlatformFunctions::toggleNightModeIdentifier())
+        return QFunctionPointer(toggleNightModeStatic);
     else if (function == KoboPlatformFunctions::clearScreenIdentifier())
         return QFunctionPointer(clearScreenStatic);
     else if (function == KoboPlatformFunctions::enableDitheringIdentifier())
@@ -213,53 +293,55 @@ QFunctionPointer KoboPlatformIntegration::platformFunction(const QByteArray &fun
         return QFunctionPointer(doManualRefreshStatic);
     else if (function == KoboPlatformFunctions::getKoboDeviceDescriptorIdentifier())
         return QFunctionPointer(getKoboDeviceDescriptorStatic);
-    else if (function == KoboPlatformFunctions::testInternetConnectionIdentifier())
-        return QFunctionPointer(testInternetConnectionStatic);
-    else if (function == KoboPlatformFunctions::enableWiFiConnectionIdentifier())
-        return QFunctionPointer(enableWiFiConnectionStatic);
-    else if (function == KoboPlatformFunctions::disableWiFiConnectionIdentifier())
-        return QFunctionPointer(disableWiFiConnectionStatic);
-
     return 0;
-}
-
-void KoboPlatformIntegration::setFrontlightLevelStatic(int val, int temp)
-{
-    KoboPlatformIntegration *self =
-        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
-
-    self->koboAdditions->setFrontlightLevel(val, temp);
-}
-
-int KoboPlatformIntegration::getBatteryLevelStatic()
-{
-    KoboPlatformIntegration *self =
-        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
-
-    return self->koboAdditions->getBatteryLevel();
-}
-
-bool KoboPlatformIntegration::isBatteryChargingStatic()
-{
-    KoboPlatformIntegration *self =
-        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
-
-    return self->koboAdditions->isBatteryCharging();
 }
 
 void KoboPlatformIntegration::setFullScreenRefreshModeStatic(WaveForm waveform)
 {
     KoboPlatformIntegration *self =
         static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
-
     self->m_primaryScreen->setFullScreenRefreshMode(waveform);
+}
+
+void KoboPlatformIntegration::setPartialScreenRefreshModeStatic(WaveForm waveform)
+{
+    KoboPlatformIntegration *self =
+        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    self->m_primaryScreen->setPartialScreenRefreshMode(waveform);
+}
+
+void KoboPlatformIntegration::setFastScreenRefreshModeStatic(WaveForm waveform)
+{
+    KoboPlatformIntegration *self =
+        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    self->m_primaryScreen->setFastScreenRefreshMode(waveform);
+}
+
+void KoboPlatformIntegration::setDefaultWaveformStatic()
+{
+    KoboPlatformIntegration *self =
+        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    self->m_primaryScreen->setDefaultWaveform();
+}
+
+void KoboPlatformIntegration::setFlashingStatic(bool v)
+{
+    KoboPlatformIntegration *self =
+        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    self->m_primaryScreen->setFlashing(v);
+}
+
+void KoboPlatformIntegration::toggleNightModeStatic()
+{
+    KoboPlatformIntegration *self =
+        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    self->m_primaryScreen->toggleNightMode();
 }
 
 void KoboPlatformIntegration::clearScreenStatic(bool waitForCompleted)
 {
     KoboPlatformIntegration *self =
         static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
-
     self->m_primaryScreen->clearScreen(waitForCompleted);
 }
 
@@ -267,7 +349,6 @@ void KoboPlatformIntegration::enableDitheringStatic(bool softwareDithering, bool
 {
     KoboPlatformIntegration *self =
         static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
-
     self->m_primaryScreen->enableDithering(softwareDithering, hardwareDithering);
 }
 
@@ -275,7 +356,6 @@ void KoboPlatformIntegration::doManualRefreshStatic(QRect region)
 {
     KoboPlatformIntegration *self =
         static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
-
     self->m_primaryScreen->doManualRefresh(region);
 }
 
@@ -283,30 +363,5 @@ KoboDeviceDescriptor KoboPlatformIntegration::getKoboDeviceDescriptorStatic()
 {
     KoboPlatformIntegration *self =
         static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
-
     return *self->deviceDescriptor();
-}
-
-void KoboPlatformIntegration::enableWiFiConnectionStatic()
-{
-    KoboPlatformIntegration *self =
-        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
-
-    self->wifiManager.enableWiFiConnection();
-}
-
-void KoboPlatformIntegration::disableWiFiConnectionStatic()
-{
-    KoboPlatformIntegration *self =
-        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
-
-    self->wifiManager.disableWiFiConnection();
-}
-
-bool KoboPlatformIntegration::testInternetConnectionStatic(int timeout)
-{
-    KoboPlatformIntegration *self =
-        static_cast<KoboPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
-
-    return self->wifiManager.testInternetConnection(timeout);
 }

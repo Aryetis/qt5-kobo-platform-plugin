@@ -1,0 +1,17 @@
+CompileFlags:
+  Add:
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/include"
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/include/QtGui"
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/include/QtGui/5.15.2/QtGui"
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/include/QtGui/5.15.2"
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/include/QtCore/5.15.2"
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/include/QtCore"
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/include/QtCore/5.15.2/QtCore"
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/include/QtEventDispatcherSupport/5.15.2"
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/include/QtFbSupport/5.15.2"
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/include/QtFontDatabaseSupport/5.15.2"
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/mkspecs/linux-kobo-gnueabihf-g++"
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/include/QtServiceSupport/5.15.2/"
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/include/QtInputSupport/5.15.2"
+    - "-I/home/build/inkbox/compiled-binaries/qt-bin/qt-linux-5.15.2-kobo/include/QtDeviceDiscoverySupport/5.15.2"
+    - "-I/home/build/inkbox/qt5-kobo-platform-plugin/FBInk"

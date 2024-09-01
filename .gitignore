@@ -31,6 +31,7 @@ Makefile*
 *build-*
 *.qm
 *.prl
+.qtc_clangd
 
 # Qt unit tests
 target_wrapper.*
@@ -64,3 +65,8 @@ compile_commands.json
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
 **/.history
+
+libkobo.so
+FBink
+build/
+koboplatformplugin.pri

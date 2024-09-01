@@ -77,7 +77,6 @@ public:
 
     void addDevice(const QString &deviceNode);
     void removeDevice(const QString &deviceNode);
-
     void updateInputDeviceCount();
 
 private:
