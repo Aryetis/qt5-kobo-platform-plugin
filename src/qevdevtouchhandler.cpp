@@ -49,7 +49,6 @@
 #include <QSocketNotifier>
 #include <QStringList>
 #include <QTouchDevice>
-#include <mutex>
 
 #include "qevdevtouchdata.h"
 #include "qevdevtouchdata2.h"

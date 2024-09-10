@@ -42,12 +42,7 @@ public:
 
     bool setScreenRotation(ScreenRotation r, int bpp = 8);
 
-    void doSunxiPenRefresh();
-
     ScreenRotation getScreenRotation();
-
-    FBInkConfig *getFBInkConfig();
-    FBInkState *getFBInkState();
 
     QRegion doRedraw() override;
 

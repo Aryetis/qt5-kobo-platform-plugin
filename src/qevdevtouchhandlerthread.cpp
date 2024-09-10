@@ -49,7 +49,6 @@
 #include <QSocketNotifier>
 #include <QStringList>
 #include <QTouchDevice>
-#include <mutex>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,6 +64,7 @@ QEvdevTouchScreenHandlerThread::QEvdevTouchScreenHandlerThread(const QString &de
     koboFbScreen(koboFbScreen)
 
 {
+    setParent(parent);
     start();
 }
 
