@@ -190,7 +190,6 @@ KoboDeviceDescriptor KoboGoldfinch = {
     .device = KoboClara2E,
     .mark = 7,
     .dpi = 300,
-    .hasGSensor = true,
 };
 
 // Kobo Libra Colour
@@ -198,10 +197,23 @@ KoboDeviceDescriptor KoboMonza = {
     .device = KoboLibraColour,
     .mark = 8,
     .dpi = 300,
-    .isREAGL = true,
     .hasGSensor = true,
-    .touchscreenSettings= {.swapXY = true, .invertX = false, .invertY = true},
+    .touchscreenSettings= {.invertX = false, .invertY = true},
 };
+
+// Kobo Clara BW // TODO NOW
+KoboDeviceDescriptor KoboSpaBW = {
+    .device = KoboClaraBW,
+    .mark = 8,
+    .dpi = 300,
+    };
+
+// Kobo Clara Colour // TODO NOW
+KoboDeviceDescriptor KoboSpaColour = {
+    .device = KoboClaraColour,
+    .mark = 8,
+    .dpi = 300,
+    };
 
 static QString exec(const char *cmd)
 {
@@ -344,9 +356,17 @@ KoboDeviceDescriptor determineDevice()
     {
         device = KoboGoldfinch;
     }
-    else if (deviceName == "monza")
+    else if (deviceName == "monza" || deviceName == "monzaTolino" )
     {
         device = KoboMonza;
+    }
+    else if (deviceName == "spaBW" || deviceName == "spaTolinoBW")
+    {
+        device = KoboSpaBW;
+    }
+    else if (deviceName == "spaColour" || deviceName == "spaTolinoColour")
+    {
+        device = KoboSpaColour;
     }
     else
     {

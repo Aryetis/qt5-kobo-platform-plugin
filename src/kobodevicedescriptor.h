@@ -29,7 +29,9 @@ enum KoboDevice
     KoboSage,
     KoboLibra2,
     KoboClara2E,
-    KoboLibraColour
+    KoboLibraColour,
+    KoboClaraBW,
+    KoboClaraColour
 };
 
 struct TouchscreenSettings
