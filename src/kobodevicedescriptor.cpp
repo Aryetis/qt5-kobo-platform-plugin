@@ -199,6 +199,7 @@ KoboDeviceDescriptor KoboMonza = {
     .dpi = 300,
     .hasGSensor = true,
     .touchscreenSettings= {.invertX = false, .invertY = true},
+    .isColor = true,
 };
 
 // Kobo Clara BW // TODO NOW
@@ -213,6 +214,7 @@ KoboDeviceDescriptor KoboSpaColour = {
     .device = KoboClaraColour,
     .mark = 8,
     .dpi = 300,
+    .isColor = true,
     };
 
 static QString exec(const char *cmd)

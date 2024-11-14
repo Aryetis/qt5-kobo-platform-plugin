@@ -183,7 +183,7 @@ bool KoboFbScreen::initialize()
 
     // Don't listed to the sys interface, that's a very bad idea as Niluje explained.
     // But we use native FBInk so that's good?
-    setScreenRotation(getScreenRotation());
+    setScreenRotation(getScreenRotation(), originalBpp);
 
     QFbScreen::initializeCompositor();
 

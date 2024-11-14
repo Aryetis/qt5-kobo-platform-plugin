@@ -70,6 +70,8 @@ struct KoboDeviceDescriptor
 
     // Sunxi devices require a completely different fb backend...
     bool isSunxi = false;
+
+    bool isColor = false;
 };
 
 KoboDeviceDescriptor determineDevice();
