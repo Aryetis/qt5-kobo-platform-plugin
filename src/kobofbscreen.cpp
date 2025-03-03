@@ -42,8 +42,10 @@ static QImage::Format determineFormat(int fbfd, int depth)
             }
             else if (memcmp(rgba, abgr8888, 3 * sizeof(fb_bitfield)) == 0)
             {
-                format = QImage::Format_RGB32;
+                //format = QImage::Format_RGB32;
                 // pixeltype =  QScreen::BGRPixel;
+                // fixed for correct colours on Libra Color and probably other Kaleido screens
+                format = QImage::Format_RGBA8888;
             }
             break;
         }
