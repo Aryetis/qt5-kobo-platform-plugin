@@ -74,7 +74,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
     qCDebug(qLcEvdevTouch2) << "spec: " <<spec;
 
     const QStringList args = spec.split(QLatin1Char(':'));
-    bool experimentaltouchdhandler = false;
+    bool legacytouchhandler = false;
     bool swapxy = false;
     bool invertx = false;
     bool inverty = false;
@@ -146,9 +146,9 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
         {
             inverty = true;
         }
-        else if (args.at(i).toLower() == QLatin1String("experimentaltouchhandler"))
+        else if (args.at(i).toLower() == QLatin1String("legacytouchhandler"))
         {
-            experimentaltouchdhandler = true;
+            legacytouchhandler = true;
         }
     }
 
@@ -168,7 +168,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
     }
 
 
-    if(!experimentaltouchdhandler)
+    if(legacytouchhandler)
         d = new QEvdevTouchScreenData(this, args);
     else
         d = new QEvdevTouchScreenData2(this, args, koboFbScreen);

@@ -112,7 +112,7 @@ void KoboPlatformIntegration::createInputHandlers()
     bool manualRangeFlip = false;
     int touchRangeX = 0;
     int touchRangeY = 0;
-    bool experimentaltouchhandler = false;
+    bool legacytouchhandler = false;
     bool keyboard = false;
     bool mouse = false;
 
@@ -161,9 +161,9 @@ void KoboPlatformIntegration::createInputHandlers()
         {
             manualRangeFlip = true;
         }
-        if (arg.contains("experimentaltouchhandler"))
+        if (arg.contains("legacytouchhandler"))
         {
-            experimentaltouchhandler = true;
+            legacytouchhandler = true;
         }
     }
 
@@ -186,8 +186,8 @@ void KoboPlatformIntegration::createInputHandlers()
         evdevTouchArgs += QString(":hw_range_x_max=%1").arg(touchRangeX);
     if (touchRangeY > 0)
         evdevTouchArgs += QString(":hw_range_y_max=%1").arg(touchRangeY);
-    if (experimentaltouchhandler)
-        evdevTouchArgs += ":experimentaltouchhandler";
+    if (legacytouchhandler)
+        evdevTouchArgs += ":legacytouchhandler";
 
     evdevTouchArgs += QString(":screenwidth=%1").arg(koboDevice.width);
     evdevTouchArgs += QString(":screenheight=%1").arg(koboDevice.height);
