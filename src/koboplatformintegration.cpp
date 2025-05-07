@@ -161,9 +161,17 @@ void KoboPlatformIntegration::createInputHandlers()
         {
             manualRangeFlip = true;
         }
-        if (arg.contains("legacytouchhandler"))
+
+        if (koboDevice.mark < 7)
         {
-            legacytouchhandler = true;
+            // forcing usage of moderntouchhandler/QEvdevTouchScreenData2 on old devices,
+            // known to cause problems with some old devices such as Kobo Glo
+            legacytouchhandler = !arg.contains("moderntouchhandler");
+        }
+        else
+        {
+            // forcing usage of legacytouchhandler on new devices, not recommended
+            legacytouchhandler = arg.contains("legacytouchhandler");
         }
     }
 
